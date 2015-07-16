@@ -1,0 +1,33 @@
+{
+  "name": "fireflower-visualizer",
+  "version": "1.0.0",
+  "description": "Visualize a flower from its logs",
+  "main": "index.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "watchify index.js -o share/build.js & node server"
+  },
+  "browserify": {
+    "transform": [
+      [
+        "txtify2",
+        {
+          "extensions": [
+            "html"
+          ]
+        }
+      ]
+    ]
+  },
+  "dependencies": {
+    "browserify": "^10.2.6",
+    "ecstatic": "^0.8.0",
+    "firebase": "^2.2.7",
+    "hyperglue2": "^1.6.2",
+    "inherits": "^2.0.1",
+    "realtime-model": "git://github.com/jessetane/realtime-model",
+    "txtify2": "^2.0.0"
+  },
+  "author": "jesse.tane@gmail.com",
+  "license": "none"
+}
