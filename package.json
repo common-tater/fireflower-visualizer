@@ -21,14 +21,13 @@
   },
   "dependencies": {
     "browserify": "^10.2.6",
-    "chipmunk": "^6.1.1",
+    "cannon": "^0.6.2",
     "ecstatic": "^0.8.0",
-    "famous": "^0.6.2",
     "firebase": "^2.2.7",
     "hyperglue2": "^1.6.2",
     "inherits": "^2.0.1",
-    "matter-js": "^0.8.0",
-    "realtime-model": "git://github.com/jessetane/realtime-model",
+    "realtime-model": "jessetane/realtime-model",
+    "three": "^0.71.0",
     "txtify2": "^2.0.0"
   },
   "author": "jesse.tane@gmail.com",

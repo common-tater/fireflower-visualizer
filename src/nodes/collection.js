@@ -1,7 +1,7 @@
 module.exports = NodeCollection
 
 var inherits = require('inherits')
-var Collection = require('../collection')
+var Collection = require('../../lib/collection')
 
 inherits(NodeCollection, Collection)
 
@@ -17,7 +17,7 @@ NodeCollection.prototype.sort = function () {
   for (var i in this.models) {
     var model = this.models[i]
 
-    if (now - model.data.timestamp > 5000) {
+    if (now - model.data.timestamp > 10000) {
       continue
     }
 

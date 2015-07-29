@@ -1,81 +1,82 @@
 module.exports = NodeSingleView
 
-var famous = require('famous')
-var DOMElement = famous.domRenderables.DOMElement
-var Position = famous.components.Position
-var Size = famous.components.Size
-var Sphere = famous.physics.Sphere
-var Vec3 = famous.math.Vec3
-var Gravity3D = famous.physics.Gravity3D
-var Mesh = require('famous/webgl-renderables/Mesh')
-var Color = require('famous/utilities/Color')
+var THREE = require('three')
+var CANNON = require('cannon')
 
 function NodeSingleView () {
   this.update = this.update.bind(this)
+
+  this.body = new CANNON.Body({
+    mass: 0.1,
+    material: new CANNON.Material()
+  })
+  this.body.preStep = this.preStep.bind(this)
+
+  this.element = new THREE.Group()
+
+  geometry = new THREE.PlaneBufferGeometry(1, 0.5, 2, 2)
+  material = new THREE.MeshBasicMaterial({ color: 0x00 })
+  material.opacity = 0
+  this.domPlane = new THREE.Mesh(geometry, material)
+  this.domPlane.position.y = -1.0
+  this.domPlane.position.z = -0.1
+  this.element.add(this.domPlane)
+
+  this.labelElement = document.createElement('div')
+  this.labelElement.className = 'label'
+  this.labelElement.textContent = "ƒƒ"
+  this.domElement = new THREE.CSS3DObject(this.labelElement)
+  this.domElement.scale.x = 1 / 100
+  this.domElement.scale.y = this.domElement.scale.x
+  this.domElement.scale.z = this.domElement.scale.x
+  this.domPlane.add(this.domElement)
+}
+
+NodeSingleView.prototype.setupSurface = function (radius, color) {
+  if (this.surface) {
+    if (this.surface.isRoot === this.isRoot) {
+      return
+    }
+    this.element.remove(this.surface)
+  }
+
+  this.domPlane.position.y = this.isRoot ? -1.25 : -0.8
+
+  var geometry = new THREE.SphereGeometry(radius, 64, 64)
+  var material = this.material = new THREE.MeshPhongMaterial({ color: color })
+  this.surface = new THREE.Mesh(geometry, material)
+  this.surface.isRoot = this.isRoot
+  this.element.add(this.surface)
 }
 
 NodeSingleView.prototype.show = function () {
-  var isRoot = this.model.data.root
-  var radius = isRoot ? 50 : 20
-  var mass = isRoot ? 1000 : 20
-
-  this.element
-    .setMountPoint(0.5, 0.5)
-    .setSizeMode('absolute', 'absolute')
-    .setAbsoluteSize(
-      radius * 2,
-      radius * 2
-    )
-
-  this.domElement = new DOMElement(this.element, {
-    content: this.model.id.slice(-5).toLowerCase(),
-    properties: {
-      'border-radius': '50%',
-      'background-color': isRoot ? 'rgba(255,255,255,1)' : 'rgba(100,100,100,1)',
-      'display': 'table-cell',
-      'text-align': 'center',
-      'vertical-align': 'middle'
-    }
-  })
-
-  this.particleElement = new Sphere({
-    mass: mass,
-    radius: radius,
-    restrictions: isRoot ? ['xy'] : []
-  })
-
-  if (isRoot) {
-    this.particleElement.setPosition(window.innerWidth / 2, window.innerHeight / 2, 0)
-    this.particleElement.setVelocity(0, 0, 0)
+  if (this.didShow) {
+    return
   } else {
-    this.particleElement.setPosition(Math.random() * window.innerWidth, Math.random() * window.innerHeight, 0)
-    this.particleElement.setVelocity(random(20), random(20), random(20))
+    this.didShow = true
   }
 
-  this.gravityElement = new Gravity3D(this.particleElement)
-
-  this.superview.physicsEngine.add(this.particleElement)
-  this.superview.physicsEngine.add(this.gravityElement)
-
-  if (isRoot) {
-    if (!this.superview.rootGravityElement) {
-      this.superview.rootGravityElement = new Gravity3D(this.particleElement)
-      for (var i in this.superview.subviews) {
-        this.superview.rootGravityElement.addTarget(this.superview.subviews[i].particleElement)
-      }
-    }
-  } else {
-    if (this.superview.rootGravityElement) {
-      this.superview.rootGravityElement.addTarget(this.particleElement)
-    }
+  if (!this.model) {
+    this.element.remove(this.domPlane)
+    return
   }
 
   this.model.on('update', this.update)
+  this.model.watch()
   this.update()
 }
 
 NodeSingleView.prototype.update = function () {
-  if (this.model.data.upstream) {
+  this.isRoot = !this.model || this.model.data.root
+  this.labelElement.textContent = this.model.id.slice(-5)
+
+  if (this.isRoot) {
+    this.setupSurface(0.5, 0xFF8C19)
+  } else {
+    this.setupSurface(0.25, 0x666666)
+  }
+
+  if (this.model && this.model.data.upstream) {
     if (this.upstream) {
       if (this.model.data.upstream === this.upstream.model.id) {
         return
@@ -83,38 +84,92 @@ NodeSingleView.prototype.update = function () {
       this.disconnectUpstream()
     }
 
-    this.upstream = this.superview.subviews[this.model.data.upstream]
     this.connectUpstream()
   } else {
     this.disconnectUpstream()
   }
 }
 
-NodeSingleView.prototype.connectUpstream = function () {
-  if (this.upstream) {
-    this.gravityElement.addTarget(this.upstream.particleElement)
-    this.upstream.gravityElement.addTarget(this.particleElement)
-    this.domElement.setContent(this.model.id.slice(-5).toLowerCase() + ' --> ' + this.model.data.upstream.slice(-5).toLowerCase())
+NodeSingleView.prototype.preStep = function () {
+  this.body.quaternion.copy(this.superview.group.quaternion.clone().inverse())
+  this.body.quaternion.mult(this.superview.camera.quaternion, this.body.quaternion)
+
+  if (!this.upstream) {
+    return
   }
+
+  var forces = []
+  var force = null
+  var gap = null
+
+  for (var i in this.superview.subviews) {
+    var peer = this.superview.subviews[i]
+    if (peer !== this && peer.upstream !== this) {
+      forces.push(this.enforcePeerGap(peer))
+    }
+  }
+
+  force = new CANNON.Vec3(0, 0, 0)
+
+  for (var i in forces) {
+    var f = forces[i]
+    if (f) force = force.vadd(f)
+  }
+
+  this.body.force = force
+}
+
+NodeSingleView.prototype.enforcePeerGap = function (peer) {
+  var id = this.id
+  var gap = peer === this.upstream ? 2 : 5
+  var position = this.body.position.clone()
+  var target = null
+  var force = null
+
+  if (peer === this.upstream && !peer.isRoot) {
+    var upstreamDistanceToRoot = peer.body.position.distanceTo(new CANNON.Vec3(0,0,0))
+    if (upstreamDistanceToRoot > 0) {
+      target = peer.body.position.scale((upstreamDistanceToRoot + gap) / upstreamDistanceToRoot)
+    }
+  } else {
+    if (position.almostEquals(peer.body.position)) {
+      position.x += random(0.1)
+      position.y += random(0.1)
+      position.z += random(0.1)
+    }
+
+    var distanceToPeer = position.distanceTo(peer.body.position)
+    if (distanceToPeer < gap || (distanceToPeer > gap && peer === this.upstream)) {
+      target = position.vsub(peer.body.position)
+      target = target.scale(gap / distanceToPeer)
+      target = peer.body.position.vadd(target)
+    }
+  }
+
+  if (target) {
+    var distanceToTarget = position.distanceTo(target)
+    force = target.vsub(position)
+  }
+
+  return force
+}
+
+NodeSingleView.prototype.connectUpstream = function () {
+  this.upstream = this.superview.subviews[this.model.data.upstream]
 }
 
 NodeSingleView.prototype.disconnectUpstream = function () {
-  if (this.upstream) {
-    this.gravityElement.removeTarget(this.upstream.particleElement)
-    this.upstream.gravityElement.removeTarget(this.particleElement)
-    this.domElement.setContent(this.model.id)
-  }
+  delete this.upstream
 }
 
 NodeSingleView.prototype.hide = function () {
-  this.model.removeListener('update', this.update)
-  this.model.unwatch()
+  delete this._didShow
 
-  this.superview.physicsEngine.remove(this.particleElement)
-  this.superview.physicsEngine.remove(this.gravityElement)
+  this.domPlane.remove(this.domElement) // css objects need to be removed manually
 
-  if (this.model.data.root) {
-    this.superview.physicsEngine.remove(this.superview.rootGravityElement)
+  if (this.model) {
+    if (!this.collection) this.model.unwatch()
+    this.model.removeListener('update', this.update)
   }
 
   if (this.upstream) {
