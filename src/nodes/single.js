@@ -26,7 +26,6 @@ function NodeSingleView () {
   this.domElement.scale.x = 1 / 100
   this.domElement.scale.y = this.domElement.scale.x
   this.domElement.scale.z = this.domElement.scale.x
-  this.domPlane.add(this.domElement)
 }
 
 NodeSingleView.prototype.show = function () {
@@ -81,6 +80,7 @@ NodeSingleView.prototype.render = function () {
     }
 
     if (!this.domPlane.parent) {
+      this.domPlane.add(this.domElement)
       this.element.add(this.domPlane)
     }
   } else {
@@ -98,10 +98,12 @@ NodeSingleView.prototype.render = function () {
 
     if (this.upstream) {
       if (!this.domPlane.parent) {
+        this.domPlane.add(this.domElement)
         this.element.add(this.domPlane)
       }
     } else {
       if (this.domPlane.parent) {
+        this.domPlane.remove(this.domElement)
         this.element.remove(this.domPlane)
       }
     }
