@@ -114,7 +114,11 @@ NodeIndexView.prototype.setupConnectionGraph = function () {
 
 NodeIndexView.prototype.enterFrame = function () {
   this.world.step(this.timeStep)
-  this.group.rotation.y += 0.005
+
+  this.controls.update()
+  if (!this.controls.active) {
+    this.group.rotation.y += 0.005
+  }
 
   var connectionCount = 0
 
@@ -147,7 +151,6 @@ NodeIndexView.prototype.enterFrame = function () {
   }
   this.connections.geometry.attributes.position.needsUpdate = connectionCount > 0
 
-  this.controls.update()
   this.webglRenderer.render(this.scene, this.camera)
   this.domRenderer.render(this.scene, this.camera)
 
