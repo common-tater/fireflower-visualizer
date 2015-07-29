@@ -121,7 +121,7 @@ NodeSingleView.prototype.preStep = function () {
 
 NodeSingleView.prototype.enforcePeerGap = function (peer) {
   var id = this.id
-  var gap = peer === this.upstream ? 2 : 5
+  var gap = peer === this.upstream ? 2 : 4
   var position = this.body.position.clone()
   var target = null
   var force = null
