@@ -1,5 +1,5 @@
 .DS_Store
 node_modules
-share/build.js
+share/build.*
 test/env.json
 etc/env.json
