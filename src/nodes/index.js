@@ -25,6 +25,18 @@ function NodeIndexView () {
   window.addEventListener('resize', this.onresize)
   this.onresize()
   this.enterFrame()
+
+  this._refreshInterval = setInterval(function () {
+    if (Date.now() - this._lastUpdate > 8000) {
+      this.collection._onupdate()
+    }
+  }.bind(this))
+}
+
+NodeIndexView.prototype.update = function () {
+  this._lastUpdate = Date.now()
+  CollectionView.prototype.update.apply(this, arguments)
+  this.rootNode.element.visible = this.rootNode.domElement.visible = !this.collection.hasRoot
 }
 
 NodeIndexView.prototype.setupPhysics = function () {
@@ -98,7 +110,8 @@ NodeIndexView.prototype.setupConnectionGraph = function () {
   geometry.computeBoundingSphere()
 
   var material = new THREE.LineBasicMaterial({
-    color: 0x333333
+    color: 0x333333,
+    linewidth: 1.5
   })
 
   this.connections = new THREE.Line(geometry, material, THREE.LinePieces)
@@ -119,6 +132,9 @@ NodeIndexView.prototype.enterFrame = function () {
   if (!this.controls.active) {
     this.group.rotation.y += 0.005
   }
+
+  this.rootNode.element.position.copy(this.rootNode.body.position)
+  this.rootNode.element.quaternion.copy(this.rootNode.body.quaternion)
 
   var connectionCount = 0
 
@@ -149,7 +165,7 @@ NodeIndexView.prototype.enterFrame = function () {
   for (var i = connectionCount * 6; i < this.maxConnections; i++) {
     this._connectionsBuffer[i] = 0
   }
-  this.connections.geometry.attributes.position.needsUpdate = connectionCount > 0
+  this.connections.geometry.attributes.position.needsUpdate = true
 
   this.webglRenderer.render(this.scene, this.camera)
   this.domRenderer.render(this.scene, this.camera)

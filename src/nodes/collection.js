@@ -11,19 +11,20 @@ function NodeCollection (storage, Model) {
 
 NodeCollection.prototype.sort = function () {
   var sorted = []
-  var hasRoot = false
   var now = Date.now()
+
+  this.hasRoot = false
 
   for (var i in this.models) {
     var model = this.models[i]
 
-    if (now - model.data.timestamp > 10000) {
+    if (now - model.data.timestamp > 8000) {
       continue
     }
 
     if (model.data.root) {
-      if (!hasRoot) {
-        hasRoot = true
+      if (!this.hasRoot) {
+        this.hasRoot = true
         sorted.push(model)
       }
     } else {

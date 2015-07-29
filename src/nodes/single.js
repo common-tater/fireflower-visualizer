@@ -14,39 +14,19 @@ function NodeSingleView () {
 
   this.element = new THREE.Group()
 
-  geometry = new THREE.PlaneBufferGeometry(1, 0.5, 2, 2)
+  geometry = new THREE.PlaneBufferGeometry(1.1, 0.4, 2, 2)
   material = new THREE.MeshBasicMaterial({ color: 0x00 })
   material.opacity = 0
   this.domPlane = new THREE.Mesh(geometry, material)
-  this.domPlane.position.y = -1.0
   this.domPlane.position.z = -0.1
-  this.element.add(this.domPlane)
 
   this.labelElement = document.createElement('div')
   this.labelElement.className = 'label'
-  this.labelElement.textContent = "ƒƒ"
   this.domElement = new THREE.CSS3DObject(this.labelElement)
   this.domElement.scale.x = 1 / 100
   this.domElement.scale.y = this.domElement.scale.x
   this.domElement.scale.z = this.domElement.scale.x
   this.domPlane.add(this.domElement)
-}
-
-NodeSingleView.prototype.setupSurface = function (radius, color) {
-  if (this.surface) {
-    if (this.surface.isRoot === this.isRoot) {
-      return
-    }
-    this.element.remove(this.surface)
-  }
-
-  this.domPlane.position.y = this.isRoot ? -1.25 : -0.8
-
-  var geometry = new THREE.SphereGeometry(radius, 64, 64)
-  var material = this.material = new THREE.MeshPhongMaterial({ color: color })
-  this.surface = new THREE.Mesh(geometry, material)
-  this.surface.isRoot = this.isRoot
-  this.element.add(this.surface)
 }
 
 NodeSingleView.prototype.show = function () {
@@ -57,7 +37,7 @@ NodeSingleView.prototype.show = function () {
   }
 
   if (!this.model) {
-    this.element.remove(this.domPlane)
+    this.render()
     return
   }
 
@@ -68,26 +48,70 @@ NodeSingleView.prototype.show = function () {
 
 NodeSingleView.prototype.update = function () {
   this.isRoot = !this.model || this.model.data.root
-  this.labelElement.textContent = this.model.id.slice(-5)
-
-  if (this.isRoot) {
-    this.setupSurface(0.5, 0xFF8C19)
-  } else {
-    this.setupSurface(0.25, 0x666666)
-  }
 
   if (this.model && this.model.data.upstream) {
-    if (this.upstream) {
-      if (this.model.data.upstream === this.upstream.model.id) {
-        return
+    this.upstream = this.superview.subviews[this.model.data.upstream]
+  } else {
+    delete this.upstream
+  }
+
+  this.render()
+}
+
+NodeSingleView.prototype.render = function () {
+  if (this.model) {
+    this.labelElement.textContent = this.model.data.data && this.model.data.data.username || this.model.id.slice(-5)
+  } else {
+    this.labelElement.textContent = 'loading'
+  }
+
+  if (this.isRoot) {
+    if (!this._wasRoot) {
+      this._wasRoot = true
+      if (this.surface) {
+        this.element.remove(this.surface)
+        delete this.surface
       }
-      this.disconnectUpstream()
     }
 
-    this.connectUpstream()
+    if (!this.surface) {
+      this.surface = this.generateSurface(0.5, this.model ? 0xFF8C19 : 0x333333)
+      this.element.add(this.surface)
+      this.domPlane.position.y = -(0.5 + 0.4)
+    }
+
+    if (!this.domPlane.parent) {
+      this.element.add(this.domPlane)
+    }
   } else {
-    this.disconnectUpstream()
+    if (this._wasRoot) {
+      this.element.remove(this.surface)
+      delete this.surface
+      delete this._wasRoot
+    }
+
+    if (!this.surface) {
+      this.surface = this.generateSurface(0.25, 0x666666)
+      this.element.add(this.surface)
+      this.domPlane.position.y = -(0.25 + 0.4)
+    }
+
+    if (this.upstream) {
+      if (!this.domPlane.parent) {
+        this.element.add(this.domPlane)
+      }
+    } else {
+      if (this.domPlane.parent) {
+        this.element.remove(this.domPlane)
+      }
+    }
   }
+}
+
+NodeSingleView.prototype.generateSurface = function (radius, color) {
+  var geometry = new THREE.SphereGeometry(radius, 64, 64)
+  var material = this.material = new THREE.MeshPhongMaterial({ color: color })
+  return new THREE.Mesh(geometry, material)
 }
 
 NodeSingleView.prototype.preStep = function () {
@@ -154,14 +178,6 @@ NodeSingleView.prototype.enforcePeerGap = function (peer) {
   return force
 }
 
-NodeSingleView.prototype.connectUpstream = function () {
-  this.upstream = this.superview.subviews[this.model.data.upstream]
-}
-
-NodeSingleView.prototype.disconnectUpstream = function () {
-  delete this.upstream
-}
-
 NodeSingleView.prototype.hide = function () {
   delete this._didShow
 
@@ -172,9 +188,7 @@ NodeSingleView.prototype.hide = function () {
     this.model.removeListener('update', this.update)
   }
 
-  if (this.upstream) {
-    this.disconnectUpstream()
-  }
+  delete this.upstream
 }
 
 function random (max) {
