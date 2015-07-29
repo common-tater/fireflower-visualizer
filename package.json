@@ -4,8 +4,9 @@
   "description": "Visualize a flower from its logs",
   "main": "index.js",
   "scripts": {
-    "start": "node server.js",
-    "dev": "watchify index.js -o share/build.js & node server"
+    "dev": "watchify index.js -o share/build.js & node server",
+    "build": "browserify index.js > share/build.js",
+    "start": "npm run build && node server.js"
   },
   "browserify": {
     "transform": [
