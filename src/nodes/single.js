@@ -59,7 +59,12 @@ NodeSingleView.prototype.update = function () {
 
 NodeSingleView.prototype.render = function () {
   if (this.model) {
-    this.labelElement.textContent = this.model.data.data && this.model.data.data.username || this.model.id.slice(-5)
+    var label = this.model.data.data && this.model.data.data.username
+    if (label) {
+      this.labelElement.textContent = label.slice(0, 5)
+    } else {
+      this.labelElement.textContent = this.model.id.slice(-5)
+    }
   } else {
     this.labelElement.textContent = 'loading'
   }
