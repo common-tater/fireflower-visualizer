@@ -2,16 +2,18 @@ module.exports = NodeCollection
 
 var inherits = require('inherits')
 var Collection = require('../../lib/collection')
+var realnow = null
 
 inherits(NodeCollection, Collection)
 
 function NodeCollection (storage, Model) {
+  realnow = realnow || require('../../lib/realnow')(storage.parent().child('realnow'))
   Collection.call(this, storage, Model)
 }
 
 NodeCollection.prototype.sort = function () {
   var sorted = []
-  var now = Date.now()
+  var now = realnow()
 
   this.hasRoot = false
 
