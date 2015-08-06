@@ -112,6 +112,18 @@ NodeSingleView.prototype.render = function () {
         this.element.remove(this.domPlane)
       }
     }
+
+    this.renderBreaks()
+  }
+}
+
+NodeSingleView.prototype.renderBreaks = function () {
+  var breaks = this.model.data.data && this.model.data.data.breaks || []
+  var missed = breaks.reduce(function (prev, next) { return prev + next }, 0)
+  if (missed > 100) {
+    this.surface.material.color = new THREE.Color(0xFF0000)
+  } else {
+    this.surface.material.color = new THREE.Color(0x666666)
   }
 }
 
