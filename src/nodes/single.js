@@ -118,12 +118,15 @@ NodeSingleView.prototype.render = function () {
 }
 
 NodeSingleView.prototype.renderBreaks = function () {
+  var self = this
   var breaks = this.model.data.data && this.model.data.data.breaks || []
   var missed = breaks.reduce(function (prev, next) { return prev + next }, 0)
-  if (missed > 100) {
+
+  if (missed > 0) {
     this.surface.material.color = new THREE.Color(0xFF0000)
-  } else {
-    this.surface.material.color = new THREE.Color(0x666666)
+    setTimeout(function () {
+      self.surface.material.color = new THREE.Color(0x666666)
+    }, missed)
   }
 }
 
