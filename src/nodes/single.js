@@ -123,10 +123,13 @@ NodeSingleView.prototype.renderBreaks = function () {
   var missed = breaks.reduce(function (prev, next) { return prev + next }, 0)
 
   if (missed > 0) {
-    this.surface.material.color = new THREE.Color(0xFF0000)
-    setTimeout(function () {
-      self.surface.material.color = new THREE.Color(0x666666)
-    }, missed)
+    if (this._previousBreaks !== breaks) {
+      this._previousBreaks = breaks
+      this.surface.material.color = new THREE.Color(0xFF0000)
+      setTimeout(function () {
+        self.surface.material.color = new THREE.Color(0x666666)
+      }, missed * 2)
+    }
   }
 }
 
