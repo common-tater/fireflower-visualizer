@@ -20,7 +20,7 @@ NodeCollection.prototype.sort = function () {
   for (var i in this.models) {
     var model = this.models[i]
 
-    if (now - model.data.timestamp > 8000) {
+    if (!model.data.timestamp || now - model.data.timestamp > 8000) {
       continue
     }
 
