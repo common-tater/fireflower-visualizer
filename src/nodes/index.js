@@ -45,13 +45,7 @@ NodeIndexView.prototype.setupPhysics = function () {
   this.world.gravity.set(0, 0, 0)
   this.world.broadphase = new CANNON.NaiveBroadphase()
   this.world.solver.iterations = 10
-
   this.timeStep = 1 / 60
-  this.bounds = {
-    x: 20,
-    y: 10,
-    z: 5
-  }
 }
 
 NodeIndexView.prototype.setupRendering = function () {
