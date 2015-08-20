@@ -10,8 +10,8 @@ var NodeModel = require('./src/nodes/model')
 var NodeIndexView = require('./src/nodes')
 
 var THREE = require('three')
-require('./lib/three-css3drenderer')(THREE)
-require('./lib/three-orbit-controls')(THREE)
+THREE.CSS3DObject = require('./lib/three-css3drenderer')
+THREE.TrackballControls = require('./lib/three-orbit-controls')
 
 var db = new Firebase(url + '/reports')
 var nodeIndexView = new NodeIndexView()
