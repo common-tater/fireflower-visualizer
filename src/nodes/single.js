@@ -19,6 +19,7 @@ function NodeSingleView () {
   material.opacity = 0
   this.domPlane = new THREE.Mesh(geometry, material)
   this.domPlane.position.z = -0.1
+  this.element.add(this.domPlane)
 
   this.labelElement = document.createElement('div')
   this.labelElement.className = 'label'
@@ -26,6 +27,7 @@ function NodeSingleView () {
   this.domElement.scale.x = 1 / 100
   this.domElement.scale.y = this.domElement.scale.x
   this.domElement.scale.z = this.domElement.scale.x
+  this.domPlane.add(this.domElement)
 }
 
 NodeSingleView.prototype.show = function () {
@@ -55,6 +57,7 @@ NodeSingleView.prototype.update = function () {
   }
 
   this.render()
+  this._lastUpstream = this.upstream
 }
 
 NodeSingleView.prototype.render = function () {
@@ -72,78 +75,92 @@ NodeSingleView.prototype.render = function () {
   if (this.isRoot) {
     if (!this._wasRoot) {
       this._wasRoot = true
-      if (this.surface) {
-        this.element.remove(this.surface)
-        delete this.surface
+      if (this.mesh) {
+        this.element.remove(this.mesh)
+        delete this.mesh
       }
     }
 
-    if (!this.surface) {
-      this.surface = this.generateSurface(0.5, this.model ? 0xFF8C19 : 0x333333)
-      this.element.add(this.surface)
+    if (!this.mesh) {
+      this.mesh = this.generateMesh(0.5, this.model ? 0xFF8C19 : 0x333333)
+      this.element.add(this.mesh)
       this.domPlane.position.y = -(0.5 + 0.4)
-    }
-
-    if (!this.domPlane.parent) {
-      this.domPlane.add(this.domElement)
-      this.element.add(this.domPlane)
     }
   } else {
     if (this._wasRoot) {
-      this.element.remove(this.surface)
-      delete this.surface
+      this.element.remove(this.mesh)
+      delete this.mesh
       delete this._wasRoot
     }
 
-    if (!this.surface) {
-      this.surface = this.generateSurface(0.25, 0x666666)
-      this.element.add(this.surface)
+    if (!this.mesh) {
+      this.mesh = this.generateMesh(0.25, 0x666666)
+      this.element.add(this.mesh)
       this.domPlane.position.y = -(0.25 + 0.4)
     }
 
     if (this.upstream) {
-      if (!this.domPlane.parent) {
-        this.domPlane.add(this.domElement)
-        this.element.add(this.domPlane)
+      if (this.upstream !== this._lastUpstream) {
+        this.renderNewUpstream()
+      } else {
+        this.renderBreaks()
       }
     } else {
-      if (this.domPlane.parent) {
-        this.domPlane.remove(this.domElement)
-        this.element.remove(this.domPlane)
+      this.mesh.material.color = new THREE.Color(0x666666)
+      if (this._lastUpstream) {
+        this._nudge = this.body.position.clone()
+        this._nudge = this._nudge.cross(new CANNON.Vec3(5, 5, 5))
       }
     }
-
-    this.renderBreaks()
   }
 }
 
-NodeSingleView.prototype.renderBreaks = function () {
-  var self = this
-  var breaks = this.model.data.data && this.model.data.data.breaks || []
-  var missed = breaks.reduce(function (prev, next) { return prev + next }, 0)
-
-  if (missed > 0) {
-    if (this._previousBreaks !== breaks) {
-      this._previousBreaks = breaks
-      this.surface.material.color = new THREE.Color(0xFF0000)
-      setTimeout(function () {
-        self.surface.material.color = new THREE.Color(0x666666)
-      }, missed * 2)
-    }
-  }
-}
-
-NodeSingleView.prototype.generateSurface = function (radius, color) {
+NodeSingleView.prototype.generateMesh = function (radius, color) {
   var geometry = new THREE.SphereGeometry(radius, 64, 64)
   var material = this.material = new THREE.MeshPhongMaterial({ color: color })
-  return new THREE.Mesh(geometry, material)
+  var mesh = new THREE.Mesh(geometry, material)
+  mesh.userData.id = this.model && this.model.id
+  return mesh
+}
+
+NodeSingleView.prototype.renderNewUpstream = function (radius, color) {
+  if (this._renderlock) return
+
+  this.mesh.material.color = new THREE.Color(0x1AB6FF)
+  this._nudge = this.body.position.clone()
+  this._nudge = this._nudge.cross(new CANNON.Vec3(5, 5, 5))
+  this._renderlock = true
+
+  setTimeout(function () {
+    this._renderlock = false
+    this.render()
+  }.bind(this), 3500)
+}
+
+NodeSingleView.prototype.renderBreaks = function (radius, color) {
+  var breaks = this.model.data.data && this.model.data.data.breaks || []
+  var missed = breaks.reduce(function (prev, next) { return prev + next }, 0)
+  if (missed > 0 && breaks !== this._lastBreaks) {
+    this._lastBreaks = breaks
+
+    if (this._renderlock) return
+    this._renderlock = true
+    this.mesh.material.color = new THREE.Color(0xFF441A)
+
+    setTimeout(function () {
+      this._renderlock = false
+      this.render()
+    }.bind(this), 3500)
+  } else {
+    this.mesh.material.color = new THREE.Color(0xFF8C19)
+  }
 }
 
 NodeSingleView.prototype.preStep = function () {
   this.body.quaternion.copy(this.superview.group.quaternion.clone().inverse())
   this.body.quaternion.mult(this.superview.camera.quaternion, this.body.quaternion)
 
-  if (!this.upstream) {
+  if (this.isRoot) {
     return
   }
 
@@ -163,6 +180,11 @@ NodeSingleView.prototype.preStep = function () {
   for (var i in forces) {
     var f = forces[i]
     if (f) force = force.vadd(f)
+  }
+
+  if (this._nudge) {
+    force = force.vadd(this._nudge)
+    delete this._nudge
   }
 
   this.body.force = force
