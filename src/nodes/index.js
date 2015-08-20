@@ -98,14 +98,14 @@ NodeIndexView.prototype.setupCamera = function () {
 
 NodeIndexView.prototype.setupConnectionGraph = function () {
   this.maxConnections = 512
-  this._connectionsBuffer = new Float32Array(this.maxConnections * 3)
+  this._connectionsPositions = new Float32Array(this.maxConnections * 2 * 3)
 
   var geometry = new THREE.BufferGeometry()
-  geometry.addAttribute('position', new THREE.DynamicBufferAttribute(this._connectionsBuffer, 3))
+  geometry.addAttribute('position', new THREE.DynamicBufferAttribute(this._connectionsPositions, 3))
   geometry.computeBoundingSphere()
 
   var material = new THREE.LineBasicMaterial({
-    color: 0x333333,
+    color: 0x444444,
     linewidth: 1.5
   })
 
@@ -149,35 +149,28 @@ NodeIndexView.prototype.enterFrame = function () {
 
   var connectionCount = 0
 
+  for (var i = 0; i < this.maxConnections * 8; i++) {
+    this._connectionsPositions[i] = 0
+  }
+
   for (var i in this.subviews) {
     var subview = this.subviews[i]
-
     subview.element.position.copy(subview.body.position)
     subview.element.quaternion.copy(subview.body.quaternion)
     subview.body.velocity = subview.body.velocity.scale(0.75)
 
-    if (subview.upstream) {
-      this._connectionsBuffer[connectionCount * 6] = subview.upstream.element.position.x
-      this._connectionsBuffer[connectionCount * 6 + 1] = subview.upstream.element.position.y
-      this._connectionsBuffer[connectionCount * 6 + 2] = subview.upstream.element.position.z
-    } else {
-      this._connectionsBuffer[connectionCount * 6] = this.rootNode.element.position.x
-      this._connectionsBuffer[connectionCount * 6 + 1] = this.rootNode.element.position.y
-      this._connectionsBuffer[connectionCount * 6 + 2] = this.rootNode.element.position.z
-    }
-
-    this._connectionsBuffer[connectionCount * 6 + 3] = subview.element.position.x
-    this._connectionsBuffer[connectionCount * 6 + 4] = subview.element.position.y
-    this._connectionsBuffer[connectionCount * 6 + 5] = subview.element.position.z
+    var target = subview.upstream ? subview.upstream.element : subview.element
+    this._connectionsPositions[connectionCount * 6] = target.position.x
+    this._connectionsPositions[connectionCount * 6 + 1] = target.position.y
+    this._connectionsPositions[connectionCount * 6 + 2] = target.position.z
+    this._connectionsPositions[connectionCount * 6 + 3] = subview.element.position.x
+    this._connectionsPositions[connectionCount * 6 + 4] = subview.element.position.y
+    this._connectionsPositions[connectionCount * 6 + 5] = subview.element.position.z
 
     connectionCount++
   }
 
-  for (var i = connectionCount * 6; i < this.maxConnections; i++) {
-    this._connectionsBuffer[i] = 0
-  }
   this.connections.geometry.attributes.position.needsUpdate = true
-
   this.webglRenderer.render(this.scene, this.camera)
   this.domRenderer.render(this.scene, this.camera)
 
