@@ -21,6 +21,7 @@ function NodeIndexView () {
   this.setupLights()
   this.setupCamera()
   this.setupConnectionGraph()
+  this.setupClickEvents()
 
   window.addEventListener('resize', this.onresize)
   this.onresize()
@@ -125,8 +126,24 @@ NodeIndexView.prototype.setupConnectionGraph = function () {
   this.rootNode.show()
 }
 
+NodeIndexView.prototype.setupClickEvents = function () {
+  this.raycaster = new THREE.Raycaster()
+  this.clickVector = new THREE.Vector3()
+  this.element.addEventListener('click', function (evt) {
+    this._click = {
+      x: evt.clientX,
+      y: evt.clientY
+    }
+  }.bind(this))
+}
+
 NodeIndexView.prototype.enterFrame = function () {
   this.world.step(this.timeStep)
+
+  if (this._click) {
+    this.handleClick(this._click)
+    delete this._click
+  }
 
   this.controls.update()
   if (!this.controls.active) {
@@ -171,6 +188,24 @@ NodeIndexView.prototype.enterFrame = function () {
   this.domRenderer.render(this.scene, this.camera)
 
   window.requestAnimationFrame(this.enterFrame)
+}
+
+NodeIndexView.prototype.handleClick = function (click) {
+  this.clickVector.x = (click.x / this.element.clientWidth) * 2 - 1
+  this.clickVector.y = -(click.y / this.element.clientHeight) * 2 + 1
+  this.clickVector.unproject(this.camera)
+  this.clickVector.sub(this.camera.position)
+  this.clickVector.normalize()
+
+  this.raycaster.set(this.camera.position, this.clickVector)
+  var contact = this.raycaster.intersectObjects(this.scene.children, true)
+  if (contact.length) {
+    var target = contact.slice(-1)[0].object
+    var id = target.userData.id
+    if (id) {
+      console.log(this.subviews[id].model.data.data)
+    }
+  }
 }
 
 NodeIndexView.prototype.onresize = function () {
