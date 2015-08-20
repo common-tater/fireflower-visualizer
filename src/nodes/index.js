@@ -31,7 +31,7 @@ function NodeIndexView () {
     if (Date.now() - this._lastUpdate > 8000) {
       this.collection._onupdate()
     }
-  }.bind(this))
+  }.bind(this), 1000)
 }
 
 NodeIndexView.prototype.update = function () {
