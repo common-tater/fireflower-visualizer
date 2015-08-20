@@ -103,7 +103,7 @@ NodeSingleView.prototype.render = function () {
       if (this.upstream !== this._lastUpstream) {
         this.renderNewUpstream()
       } else {
-        this.renderBreaks()
+        this.renderMissed()
       }
     } else {
       this.mesh.material.color = new THREE.Color(0x666666)
@@ -137,7 +137,7 @@ NodeSingleView.prototype.renderNewUpstream = function (radius, color) {
   }.bind(this), 3500)
 }
 
-NodeSingleView.prototype.renderBreaks = function (radius, color) {
+NodeSingleView.prototype.renderMissed = function (radius, color) {
   var breaks = this.model.data.data && this.model.data.data.breaks || []
   var missed = breaks.reduce(function (prev, next) { return prev + next }, 0)
   if (missed > 0 && breaks !== this._lastBreaks) {
