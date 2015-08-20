@@ -151,7 +151,7 @@ NodeSingleView.prototype.renderMissed = function (radius, color) {
       this._renderlock = false
       this.render()
     }.bind(this), 3500)
-  } else {
+  } else if (!this._renderlock) {
     this.mesh.material.color = new THREE.Color(0xFF8C19)
   }
 }
