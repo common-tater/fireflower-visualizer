@@ -126,7 +126,14 @@ NodeSingleView.prototype.generateMesh = function (radius, color) {
 NodeSingleView.prototype.renderNewUpstream = function (radius, color) {
   if (this._renderlock) return
 
-  this.mesh.material.color = new THREE.Color(0x1AB6FF)
+  var color = 0x1AB6FF
+  var oldData = this.model.data.data && this.model.data.data.oldData
+  if (oldData && oldData !== this._lastOldData && this.model.data.timestamp - oldData < 15000) {
+    this._lastOldData = oldData
+    color = 0xFFF41A
+  }
+
+  this.mesh.material.color = new THREE.Color(color)
   this._nudge = this.body.position.clone()
   this._nudge = this._nudge.cross(new CANNON.Vec3(5, 5, 5))
   this._renderlock = true
