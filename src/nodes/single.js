@@ -99,19 +99,16 @@ NodeSingleView.prototype.render = function () {
       this.domPlane.position.y = -(0.25 + 0.4)
     }
 
-    if (this.upstream) {
-      if (this.upstream !== this._lastUpstream) {
-        this.renderNewUpstream()
-      } else {
-        this.renderMissed()
-      }
-    } else {
-      this.mesh.material.color = new THREE.Color(0x666666)
-      if (this._lastUpstream) {
-        this._nudge = this.body.position.clone()
-        this._nudge = this._nudge.cross(new CANNON.Vec3(5, 5, 5))
-      }
-    }
+    var breaks = this.model.data.data && this.model.data.data.breaks || []
+    var missed = breaks.reduce(function (prev, next) { return prev + next }, 0)
+    missed = missed > 100 && breaks !== this._lastBreaks
+    this._lastBreaks = breaks
+
+    var oldData = this.model.data.data && this.model.data.data.oldData
+    var sawOldData = oldData && oldData !== this._lastOldData && this.model.data.timestamp - oldData < 15000
+    this._lastOldData = oldData
+
+    this.renderColor(missed, sawOldData)
   }
 }
 
@@ -123,43 +120,46 @@ NodeSingleView.prototype.generateMesh = function (radius, color) {
   return mesh
 }
 
-NodeSingleView.prototype.renderNewUpstream = function (radius, color) {
-  if (this._renderlock) return
+NodeSingleView.prototype.renderColor = function (missed, oldData) {
+  var needsLock = false
+  var color = null
 
-  var color = 0x1AB6FF
-  var oldData = this.model.data.data && this.model.data.data.oldData
-  if (oldData && oldData !== this._lastOldData && this.model.data.timestamp - oldData < 15000) {
-    this._lastOldData = oldData
-    color = 0xFFF41A
+  if (this.upstream) {
+    if (this.upstream !== this._lastUpstream) {
+      if (oldData) {
+        color = 0xFFF41A
+      } else {
+        color = 0x1AB6FF
+      }
+      needsLock = true
+    } else if (!this._colorLock) {
+      if (missed) {
+        color = 0xFF441A
+        needsLock = true
+      } else {
+        color = 0xFF8C19
+      }
+    }
+  } else {
+    if (this.upstream !== this._lastUpstream && oldData) {
+      color = 0xFFF41A
+      needsLock = true
+    } else if (!this._colorLock) {
+      color = 0x666666
+    }
   }
 
-  this.mesh.material.color = new THREE.Color(color)
-  this._nudge = this.body.position.clone()
-  this._nudge = this._nudge.cross(new CANNON.Vec3(5, 5, 5))
-  this._renderlock = true
+  if (color) {
+    this.mesh.material.color = new THREE.Color(color)
 
-  setTimeout(function () {
-    this._renderlock = false
-    this.render()
-  }.bind(this), 3500)
-}
-
-NodeSingleView.prototype.renderMissed = function (radius, color) {
-  var breaks = this.model.data.data && this.model.data.data.breaks || []
-  var missed = breaks.reduce(function (prev, next) { return prev + next }, 0)
-  if (missed > 0 && breaks !== this._lastBreaks) {
-    this._lastBreaks = breaks
-
-    if (this._renderlock) return
-    this._renderlock = true
-    this.mesh.material.color = new THREE.Color(0xFF441A)
-
-    setTimeout(function () {
-      this._renderlock = false
-      this.render()
-    }.bind(this), 3500)
-  } else if (!this._renderlock) {
-    this.mesh.material.color = new THREE.Color(0xFF8C19)
+    if (needsLock) {
+      this._colorLock = true
+      clearTimeout(this._colorLockTimer)
+      this._colorLockTimer = setTimeout(function () {
+        this._colorLock = false
+        this.render()
+      }.bind(this), 3500)
+    }
   }
 }
 
