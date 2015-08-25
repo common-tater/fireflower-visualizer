@@ -109,6 +109,11 @@ NodeSingleView.prototype.render = function () {
     this._lastOldData = oldData
 
     this.renderColor(missed, sawOldData)
+
+    if (this.upstream !== this._lastUpstream) {
+      this._nudge = this.body.position.clone()
+      this._nudge = this._nudge.cross(new CANNON.Vec3(5, 5, 5))
+    }
   }
 }
 
