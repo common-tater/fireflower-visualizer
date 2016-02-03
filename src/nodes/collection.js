@@ -21,7 +21,11 @@ NodeCollection.prototype.sort = function () {
     var model = this.models[i]
 
     if (!model.data.timestamp || now - model.data.timestamp > 8000) {
-      continue
+      // only if this isn't the root should we care about the timestamp,
+      // because the root's timestamp doesn't get updated
+      if (!model.data.root) {
+        continue
+      }
     }
 
     if (model.data.root) {
