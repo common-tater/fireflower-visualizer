@@ -1,0 +1,37 @@
+var Builder = require('build-css')
+
+// env vars are respected, but you can override them:
+var b = new Builder({
+  src: '**/*.css',
+  dest: 'share/build.css',
+  ignore: [ 'share/**', 'node_modules/**' ]
+})
+
+b['build' || 'watch'](function (err) {
+  if (err)  {
+    console.error(err.message)
+  } else {
+    console.log('css built successfully')
+    buildjs()
+  }
+})
+
+function buildjs () {
+  var Builder = require('build-js')
+
+  // env vars are respected, but you can override them:
+  var b = new Builder({
+    src: 'index.js',
+    dest: 'share/build.js',
+    extensions: [ 'html', 'txt' ]
+  })
+
+  b['build' || 'watch'](function (err) {
+    if (err) {
+      console.error(err.message)
+    } else {
+      console.log('js built successfully')
+      require('../server')
+    }
+  })
+}

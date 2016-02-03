@@ -4,10 +4,8 @@
   "description": "Visualize a flower from its logs",
   "main": "index.js",
   "scripts": {
-    "dev": "watchify index.js -o share/build.js & node server",
-    "build-js": "browserify index.js > share/build.js",
-    "build-css": "find src -name *.css -exec cat {} \\; | postcss --use autoprefixer -o share/build.css",
-    "start": "npm run build-css && npm run build-js && node server.js"
+    "dev": "node bin/dev",
+    "start": "node server.js"
   },
   "browserify": {
     "transform": [
@@ -24,6 +22,8 @@
   "dependencies": {
     "autoprefixer": "5.2.0",
     "browserify": "10.2.6",
+    "build-css": "jessetane/build-css#2.0.0",
+    "build-js": "jessetane/build-js#2.0.0",
     "cannon": "0.6.2",
     "ecstatic": "0.8.0",
     "firebase": "2.2.9",
