@@ -8,34 +8,39 @@ inherits(NodeCollection, Collection)
 
 function NodeCollection (storage, Model) {
   realnow = realnow || require('../../lib/realnow')(storage.parent().child('realnow'))
-  Collection.call(this, storage, Model)
+  Collection.call(this, storage.child('reports'), Model)
 }
 
 NodeCollection.prototype.sort = function () {
-  var sorted = []
   var now = realnow()
+  var nodes = {}
 
   this.hasRoot = false
 
   for (var i in this.models) {
-    var model = this.models[i]
+    var peerModel = this.models[i]
 
-    if (!model.data.timestamp || now - model.data.timestamp > 8000) {
+    if (!peerModel.data.timestamp || now - peerModel.data.timestamp > 8000) {
       // only if this isn't the root should we care about the timestamp,
       // because the root's timestamp doesn't get updated
-      if (!model.data.root) {
+      if (!peerModel.data.root) {
         continue
       }
     }
 
-    if (model.data.root) {
+    if (peerModel.data.root) {
       if (!this.hasRoot) {
         this.hasRoot = true
-        sorted.push(model)
+        nodes[i] = peerModel
       }
     } else {
-      sorted.push(model)
+      nodes[i] = peerModel
     }
+  }
+
+  var sorted = []
+  for (i in nodes) {
+    sorted.push(nodes[i])
   }
 
   return sorted

@@ -50,7 +50,7 @@ NodeSingleView.prototype.show = function () {
 NodeSingleView.prototype.update = function () {
   this.isRoot = !this.model || this.model.data.root
 
-  if (this.model && this.model.data.upstream) {
+  if (this.model && this.model.data.upstream && this.superview) {
     this.upstream = this.superview.subviews[this.model.data.upstream]
   } else {
     delete this.upstream
@@ -142,7 +142,19 @@ NodeSingleView.prototype.renderColor = function (missed, oldData) {
         color = 0xFF441A
         needsLock = true
       } else {
-        color = 0xFF8C19
+        if (this.model && this.model.data.websocket_state === 'connected') {
+          if (this.model.data.state === 'requesting') {
+            color = 0x8CFF66
+          } else {
+            color = 0xC61AFF
+          }
+        } else if (this.model && this.model.data.state === 'connected') {
+          color = 0xFF8C19
+        } else if (this.upstream.model && this.upstream.model.data.root) {
+          color = 0xE599FF
+        } else {
+          color = 0x666666
+        }
       }
     }
   } else {
