@@ -50,8 +50,14 @@ NodeSingleView.prototype.show = function () {
 NodeSingleView.prototype.update = function () {
   this.isRoot = !this.model || this.model.data.root
 
-  if (this.model && this.model.data.upstream && this.superview) {
-    this.upstream = this.superview.subviews[this.model.data.upstream]
+  if (this.model && this.superview) {
+    if (this.model.data.upstream) {
+      this.upstream = this.superview.subviews[this.model.data.upstream]
+    } else if (this.model.data.websocket_upstream) {
+      this.upstream = this.superview.subviews[this.model.data.websocket_upstream]
+    } else {
+      delete this.upstream
+    }
   } else {
     delete this.upstream
   }
@@ -99,7 +105,13 @@ NodeSingleView.prototype.render = function () {
       this.domPlane.position.y = -(0.25 + 0.4)
     }
 
-    var breaks = this.model.data.data && this.model.data.data.breaks || []
+    var breaks = []
+    if (this.model.data.data) {
+      breaks = this.model.data.data.breaks || []
+      if (this.model.data.data.websocket_breaks) {
+        breaks = breaks.concat(this.model.data.data.websocket_breaks)
+      }
+    }
     var missed = breaks.reduce(function (prev, next) { return prev + next }, 0)
     missed = missed > 100 && breaks !== this._lastBreaks
     this._lastBreaks = breaks
@@ -143,15 +155,15 @@ NodeSingleView.prototype.renderColor = function (missed, oldData) {
         needsLock = true
       } else {
         if (this.model && this.model.data.websocket_state === 'connected') {
-          if (this.model.data.state === 'requesting') {
-            color = 0x8CFF66
-          } else {
+          if (!this.model.data.state) {
+            color = 0xE599FF
+          } else if (this.model.data.state === 'websocketconnected') {
             color = 0xC61AFF
+          } else {
+            color = 0x8CFF66
           }
         } else if (this.model && this.model.data.state === 'connected') {
           color = 0xFF8C19
-        } else if (this.upstream.model && this.upstream.model.data.root) {
-          color = 0xE599FF
         } else {
           color = 0x666666
         }
