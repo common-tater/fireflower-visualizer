@@ -157,10 +157,10 @@ NodeSingleView.prototype.renderColor = function (missed, oldData) {
         if (this.model && this.model.data.websocket_state === 'connected') {
           if (!this.model.data.state) {
             color = 0xE599FF
-          } else if (this.model.data.state === 'websocketconnected') {
-            color = 0xC61AFF
-          } else {
+          } else if (this.model.data.state === 'requesting') {
             color = 0x8CFF66
+          } else {
+            color = 0xC61AFF
           }
         } else if (this.model && this.model.data.state === 'connected') {
           color = 0xFF8C19
