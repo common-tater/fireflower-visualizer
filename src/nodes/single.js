@@ -120,7 +120,8 @@ NodeSingleView.prototype.render = function () {
     var sawOldData = oldData && oldData !== this._lastOldData && this.model.data.timestamp - oldData < 15000
     this._lastOldData = oldData
 
-    this.renderColor(missed, sawOldData)
+    var connectionScore = this.model.data.data && this.model.data.data.connection_score
+    this.renderColor(missed, sawOldData, connectionScore)
 
     if (this.upstream !== this._lastUpstream) {
       this._nudge = this.body.position.clone()
@@ -137,7 +138,7 @@ NodeSingleView.prototype.generateMesh = function (radius, color) {
   return mesh
 }
 
-NodeSingleView.prototype.renderColor = function (missed, oldData) {
+NodeSingleView.prototype.renderColor = function (missed, oldData, connectionScore) {
   var needsLock = false
   var color = null
 
@@ -180,6 +181,12 @@ NodeSingleView.prototype.renderColor = function (missed, oldData) {
 
   if (color) {
     this.mesh.material.color = new THREE.Color(color)
+    // now subtract lots of color, and only add it back
+    // in as much the connection is good
+    this.mesh.material.color.addScalar(0.5)
+    if (connectionScore !== undefined) {
+      this.mesh.material.color.addScalar(0.0 - (connectionScore / 10.0) / 2.0)
+    }
 
     if (needsLock) {
       this._colorLock = true
