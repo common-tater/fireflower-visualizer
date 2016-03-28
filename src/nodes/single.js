@@ -74,6 +74,7 @@ NodeSingleView.prototype.render = function () {
     } else {
       this.labelElement.textContent = this.model.id.slice(-5)
     }
+    var connectionScore = this.model.data.data && this.model.data.data.connection_score
   } else {
     this.labelElement.textContent = 'loading'
   }
@@ -120,14 +121,13 @@ NodeSingleView.prototype.render = function () {
     var sawOldData = oldData && oldData !== this._lastOldData && this.model.data.timestamp - oldData < 15000
     this._lastOldData = oldData
 
-    var connectionScore = this.model.data.data && this.model.data.data.connection_score
-    this.renderColor(missed, sawOldData, connectionScore)
-
     if (this.upstream !== this._lastUpstream) {
       this._nudge = this.body.position.clone()
       this._nudge = this._nudge.cross(new CANNON.Vec3(5, 5, 5))
     }
   }
+
+  this.renderColor(missed, sawOldData, connectionScore)
 }
 
 NodeSingleView.prototype.generateMesh = function (radius, color) {
@@ -142,7 +142,9 @@ NodeSingleView.prototype.renderColor = function (missed, oldData, connectionScor
   var needsLock = false
   var color = null
 
-  if (this.upstream) {
+  if (this.isRoot) {
+    color = 0xFF8C19
+  } else if (this.upstream) {
     if (this.upstream !== this._lastUpstream) {
       if (oldData) {
         color = 0xFFF41A
@@ -181,12 +183,7 @@ NodeSingleView.prototype.renderColor = function (missed, oldData, connectionScor
 
   if (color) {
     this.mesh.material.color = new THREE.Color(color)
-    // now subtract lots of color, and only add it back
-    // in as much the connection is good
-    this.mesh.material.color.addScalar(0.5)
-    if (connectionScore !== undefined) {
-      this.mesh.material.color.addScalar(0.0 - (connectionScore / 10.0) / 2.0)
-    }
+    this._applyConnectionScoreToColor(connectionScore, this.mesh.material.color)
 
     if (needsLock) {
       this._colorLock = true
@@ -196,6 +193,15 @@ NodeSingleView.prototype.renderColor = function (missed, oldData, connectionScor
         this.render()
       }.bind(this), 3500)
     }
+  }
+}
+
+NodeSingleView.prototype._applyConnectionScoreToColor = function (connectionScore, color) {
+  // now subtract lots of color, and only add it back
+  // in as much the connection is good
+  color.addScalar(0.5)
+  if (connectionScore !== undefined) {
+    color.addScalar(0.0 - (connectionScore / 10.0) / 2.0)
   }
 }
 
