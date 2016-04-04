@@ -21,11 +21,7 @@ NodeCollection.prototype.sort = function () {
     var peerModel = this.models[i]
 
     if (!peerModel.data.timestamp || now - peerModel.data.timestamp > 8000) {
-      // only if this isn't the root should we care about the timestamp,
-      // because the root's timestamp doesn't get updated
-      if (!peerModel.data.root) {
-        continue
-      }
+      continue
     }
 
     if (peerModel.data.root) {
