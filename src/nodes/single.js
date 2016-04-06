@@ -183,7 +183,11 @@ NodeSingleView.prototype.renderColor = function (missed, oldData, connectionScor
 
   if (color) {
     this.mesh.material.color = new THREE.Color(color)
-    this._applyConnectionScoreToColor(connectionScore, this.mesh.material.color)
+    // apply a color shift for how solid the peer's connection is,
+    // except for if it's showing red because of missed data
+    if (!missed) {
+      this._applyConnectionScoreToColor(connectionScore, this.mesh.material.color)
+    }
 
     if (needsLock) {
       this._colorLock = true
