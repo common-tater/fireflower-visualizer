@@ -67,10 +67,15 @@ NodeSingleView.prototype.update = function () {
 NodeSingleView.prototype.render = function () {
   if (this.model) {
     var label = this.model.data.data && this.model.data.data.username
-    if (label) {
-      this.labelElement.textContent = label.slice(0, 5)
+    var transport = this.model.data.transport
+    var id = label ? label.slice(0, 5) : this.model.id.slice(-5)
+
+    if (transport === 'server') {
+      this.labelElement.textContent = id + ' [S]'
+      this.labelElement.style.color = '#00CED1'
     } else {
-      this.labelElement.textContent = this.model.id.slice(-5)
+      this.labelElement.textContent = id
+      this.labelElement.style.color = '#FFF'
     }
   } else {
     this.labelElement.textContent = 'loading'

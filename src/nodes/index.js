@@ -99,21 +99,34 @@ NodeIndexView.prototype.setupCamera = function () {
 
 NodeIndexView.prototype.setupConnectionGraph = function () {
   this.maxConnections = 512
-  this._connectionsPositions = new Float32Array(this.maxConnections * 2 * 3)
 
-  var geometry = new THREE.BufferGeometry()
-  var positionAttribute = new THREE.BufferAttribute(this._connectionsPositions, 3)
-  positionAttribute.setUsage(THREE.DynamicDrawUsage)
-  geometry.setAttribute('position', positionAttribute)
-  geometry.computeBoundingSphere()
+  // P2P connections (gray)
+  this._p2pPositions = new Float32Array(this.maxConnections * 2 * 3)
+  var p2pGeometry = new THREE.BufferGeometry()
+  var p2pAttribute = new THREE.BufferAttribute(this._p2pPositions, 3)
+  p2pAttribute.setUsage(THREE.DynamicDrawUsage)
+  p2pGeometry.setAttribute('position', p2pAttribute)
+  p2pGeometry.computeBoundingSphere()
 
-  var material = new THREE.LineBasicMaterial({
+  this.p2pConnections = new THREE.LineSegments(p2pGeometry, new THREE.LineBasicMaterial({
     color: 0x444444,
     linewidth: 1.5
-  })
+  }))
+  this.group.add(this.p2pConnections)
 
-  this.connections = new THREE.LineSegments(geometry, material)
-  this.group.add(this.connections)
+  // Server connections (cyan)
+  this._serverPositions = new Float32Array(this.maxConnections * 2 * 3)
+  var serverGeometry = new THREE.BufferGeometry()
+  var serverAttribute = new THREE.BufferAttribute(this._serverPositions, 3)
+  serverAttribute.setUsage(THREE.DynamicDrawUsage)
+  serverGeometry.setAttribute('position', serverAttribute)
+  serverGeometry.computeBoundingSphere()
+
+  this.serverConnections = new THREE.LineSegments(serverGeometry, new THREE.LineBasicMaterial({
+    color: 0x00CED1,
+    linewidth: 2.0
+  }))
+  this.group.add(this.serverConnections)
 
   this.rootNode = new this.ItemView()
   this.rootNode.isRoot = true
@@ -150,10 +163,13 @@ NodeIndexView.prototype.enterFrame = function () {
   this.rootNode.element.position.copy(this.rootNode.body.position)
   this.rootNode.element.quaternion.copy(this.rootNode.body.quaternion)
 
-  var connectionCount = 0
+  var p2pCount = 0
+  var serverCount = 0
+  var maxPositions = this.maxConnections * 2 * 3
 
-  for (var i = 0; i < this.maxConnections * 8; i++) {
-    this._connectionsPositions[i] = 0
+  for (var i = 0; i < maxPositions; i++) {
+    this._p2pPositions[i] = 0
+    this._serverPositions[i] = 0
   }
 
   for (var i in this.subviews) {
@@ -163,17 +179,23 @@ NodeIndexView.prototype.enterFrame = function () {
     subview.body.velocity = subview.body.velocity.scale(0.75)
 
     var target = subview.upstream ? subview.upstream.element : subview.element
-    this._connectionsPositions[connectionCount * 6] = target.position.x
-    this._connectionsPositions[connectionCount * 6 + 1] = target.position.y
-    this._connectionsPositions[connectionCount * 6 + 2] = target.position.z
-    this._connectionsPositions[connectionCount * 6 + 3] = subview.element.position.x
-    this._connectionsPositions[connectionCount * 6 + 4] = subview.element.position.y
-    this._connectionsPositions[connectionCount * 6 + 5] = subview.element.position.z
+    var isServer = subview.model && subview.model.data.transport === 'server'
+    var positions = isServer ? this._serverPositions : this._p2pPositions
+    var idx = isServer ? serverCount : p2pCount
 
-    connectionCount++
+    positions[idx * 6] = target.position.x
+    positions[idx * 6 + 1] = target.position.y
+    positions[idx * 6 + 2] = target.position.z
+    positions[idx * 6 + 3] = subview.element.position.x
+    positions[idx * 6 + 4] = subview.element.position.y
+    positions[idx * 6 + 5] = subview.element.position.z
+
+    if (isServer) serverCount++
+    else p2pCount++
   }
 
-  this.connections.geometry.attributes.position.needsUpdate = true
+  this.p2pConnections.geometry.attributes.position.needsUpdate = true
+  this.serverConnections.geometry.attributes.position.needsUpdate = true
   this.webglRenderer.render(this.scene, this.camera)
   this.domRenderer.render(this.scene, this.camera)
 
