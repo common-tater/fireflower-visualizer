@@ -11,3 +11,46 @@ body {
   font-family: monospace;
   color: #444;
 }
+
+#controls {
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  z-index: 100;
+}
+
+#controls #reset-btn {
+  font-family: monospace;
+  font-size: 13px;
+  padding: 6px 14px;
+  background: #333;
+  color: #fff;
+  border: 1px solid #555;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+#controls #reset-btn:hover {
+  background: #c00;
+}
+
+#controls #server-toggle {
+  font-size: 13px;
+  color: #888;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  user-select: none;
+}
+
+#controls #server-toggle input {
+  cursor: pointer;
+}
+
+#controls #server-toggle.active span {
+  color: #00CED1;
+}
