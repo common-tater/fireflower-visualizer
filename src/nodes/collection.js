@@ -25,7 +25,7 @@ NodeCollection.prototype.sort = function () {
       continue
     }
 
-    if (model.data.isServer && model.data.root) {
+    if (model.data.isServer) {
       if (!this.hasServer) {
         this.hasServer = true
         sorted.push(model)
