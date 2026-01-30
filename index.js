@@ -1,19 +1,20 @@
-var Firebase = require('firebase')
+// Initialize Firebase from config
+import Firebase from './lib/firebase-compat'
+import firebaseConfig from './firebase-config'
+Firebase.initializeApp(firebaseConfig)
 
-var url = window.location.pathname.slice(1)
-if (!url) {
-  throw new Error('no flower selected')
+// Extract database path from URL pathname
+var dbPath = window.location.pathname.slice(1)
+if (!dbPath) {
+  dbPath = 'tree' // Default path matching fireflower example
 }
 
-var Collection = require('./src/nodes/collection')
-var NodeModel = require('./src/nodes/model')
-var NodeIndexView = require('./src/nodes')
+import Collection from './src/nodes/collection'
+import NodeModel from './src/nodes/model'
+import NodeIndexView from './src/nodes'
 
-var THREE = require('three')
-THREE.CSS3DObject = require('./lib/three-css3drenderer')
-THREE.TrackballControls = require('./lib/three-orbit-controls')
-
-var db = new Firebase(url + '/reports')
+// Create ref to reports path
+var db = new Firebase(dbPath + '/reports')
 var nodeIndexView = new NodeIndexView()
 nodeIndexView.collection = new Collection(db, NodeModel)
 nodeIndexView.show()

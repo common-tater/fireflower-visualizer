@@ -1,38 +1,24 @@
 {
   "name": "fireflower-visualizer",
-  "version": "1.0.0",
-  "description": "Visualize a flower from its logs",
+  "version": "2.0.0",
+  "description": "Visualize a fireflower tree from its logs",
   "main": "index.js",
   "scripts": {
-    "dev": "watchify index.js -o share/build.js & node server",
-    "build-js": "browserify index.js > share/build.js",
-    "build-css": "find src -name *.css -exec cat {} \\; | postcss --use autoprefixer -o share/build.css",
-    "start": "npm run build-css && npm run build-js && node server.js"
-  },
-  "browserify": {
-    "transform": [
-      [
-        "txtify2",
-        {
-          "extensions": [
-            "html"
-          ]
-        }
-      ]
-    ]
+    "dev": "npm run build && node server.js",
+    "build-js": "esbuild index.js --bundle --outfile=share/build.js --platform=browser --sourcemap",
+    "build-css": "cat src/nodes/style.css src/theme/style.css > share/build.css 2>/dev/null || echo '' > share/build.css",
+    "build": "npm run build-css && npm run build-js",
+    "start": "npm run build && node server.js"
   },
   "dependencies": {
-    "autoprefixer": "5.2.0",
-    "browserify": "10.2.6",
-    "cannon": "0.6.2",
-    "ecstatic": "0.8.0",
-    "firebase": "2.2.9",
+    "cannon": "^0.6.2",
+    "ecstatic": "^4.1.4",
+    "esbuild": "^0.19.0",
+    "firebase": "^10.7.0",
     "hyperglue2": "1.6.2",
-    "inherits": "2.0.1",
-    "postcss-cli": "1.5.0",
+    "inherits": "2.0.4",
     "realtime-model": "jessetane/realtime-model#1.0.6",
-    "three": "0.71.0",
-    "txtify2": "2.0.0"
+    "three": "^0.160.0"
   },
   "author": "jesse.tane@gmail.com",
   "license": "MIT"

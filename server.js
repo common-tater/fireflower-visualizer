@@ -12,7 +12,7 @@ var server = http.createServer(function (req, res) {
   })
 })
 
-server.listen(process.env.PORT || 8080, process.env.HOST || '::', function (err) {
+server.listen(process.env.PORT || 8081, process.env.HOST || '::', function (err) {
   if (err) return console.error('failed to start http server:', err)
-  console.log('server listening on ' + (process.env.PORT || 8080))
+  console.log('server listening on ' + (process.env.PORT || 8081))
 })

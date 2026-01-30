@@ -1,10 +1,11 @@
-module.exports = NodeIndexView
+import * as THREE from 'three'
+import { CSS3DRenderer, CSS3DObject } from 'three/addons/renderers/CSS3DRenderer.js'
+import { TrackballControls } from 'three/addons/controls/TrackballControls.js'
+import CANNON from 'cannon'
+import inherits from 'inherits'
+import CollectionView from '../../lib/collection-view'
+import NodeSingleView from './single'
 
-var THREE = require('three')
-var CANNON = require('cannon')
-var inherits = require('inherits')
-var CollectionView = require('../../lib/collection-view')
-var NodeSingleView = require('./single')
 
 inherits(NodeIndexView, CollectionView)
 
@@ -53,7 +54,7 @@ NodeIndexView.prototype.setupRendering = function () {
   this.group = new THREE.Group()
   this.scene.add(this.group)
 
-  this.domRenderer = new THREE.CSS3DRenderer()
+  this.domRenderer = new CSS3DRenderer()
   this.element.querySelector('#dom')
     .appendChild(this.domRenderer.domElement)
 
@@ -84,7 +85,7 @@ NodeIndexView.prototype.setupCamera = function () {
   this.camera.position.z = 35
   this.scene.add(this.camera)
 
-  this.controls = new THREE.TrackballControls(this.camera, this.webglRenderer.domElement)
+  this.controls = new TrackballControls(this.camera, this.webglRenderer.domElement)
   this.controls.rotateSpeed = 1.0
   this.controls.zoomSpeed = 1.2
   this.controls.panSpeed = 0.2
@@ -101,7 +102,9 @@ NodeIndexView.prototype.setupConnectionGraph = function () {
   this._connectionsPositions = new Float32Array(this.maxConnections * 2 * 3)
 
   var geometry = new THREE.BufferGeometry()
-  geometry.addAttribute('position', new THREE.DynamicBufferAttribute(this._connectionsPositions, 3))
+  var positionAttribute = new THREE.BufferAttribute(this._connectionsPositions, 3)
+  positionAttribute.setUsage(THREE.DynamicDrawUsage)
+  geometry.setAttribute('position', positionAttribute)
   geometry.computeBoundingSphere()
 
   var material = new THREE.LineBasicMaterial({
@@ -109,7 +112,7 @@ NodeIndexView.prototype.setupConnectionGraph = function () {
     linewidth: 1.5
   })
 
-  this.connections = new THREE.Line(geometry, material, THREE.LinePieces)
+  this.connections = new THREE.LineSegments(geometry, material)
   this.group.add(this.connections)
 
   this.rootNode = new this.ItemView()
@@ -217,3 +220,5 @@ NodeIndexView.prototype.removeSubview = function (subview) {
   this.group.remove(subview.element)
   this.world.remove(subview.body)
 }
+
+export default NodeIndexView

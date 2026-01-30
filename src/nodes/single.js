@@ -1,7 +1,9 @@
-module.exports = NodeSingleView
+import * as THREE from 'three'
+import { CSS3DObject } from 'three/addons/renderers/CSS3DRenderer.js'
+import CANNON from 'cannon'
 
-var THREE = require('three')
-var CANNON = require('cannon')
+// Attach addon to THREE global specific for this module scope if needed, or just use CSS3DObject directly
+// THREE.CSS3DObject = CSS3DObject // Removed because imports are immutable
 
 function NodeSingleView () {
   this.update = this.update.bind(this)
@@ -14,7 +16,7 @@ function NodeSingleView () {
 
   this.element = new THREE.Group()
 
-  geometry = new THREE.PlaneBufferGeometry(1.1, 0.4, 2, 2)
+  geometry = new THREE.PlaneGeometry(1.1, 0.4, 2, 2)
   material = new THREE.MeshBasicMaterial({ color: 0x00 })
   material.opacity = 0
   this.domPlane = new THREE.Mesh(geometry, material)
@@ -23,7 +25,7 @@ function NodeSingleView () {
 
   this.labelElement = document.createElement('div')
   this.labelElement.className = 'label'
-  this.domElement = new THREE.CSS3DObject(this.labelElement)
+  this.domElement = new CSS3DObject(this.labelElement)
   this.domElement.scale.x = 1 / 100
   this.domElement.scale.y = this.domElement.scale.x
   this.domElement.scale.z = this.domElement.scale.x
@@ -169,7 +171,7 @@ NodeSingleView.prototype.renderColor = function (missed, oldData) {
 }
 
 NodeSingleView.prototype.preStep = function () {
-  this.body.quaternion.copy(this.superview.group.quaternion.clone().inverse())
+  this.body.quaternion.copy(this.superview.group.quaternion.clone().invert())
   this.body.quaternion.mult(this.superview.camera.quaternion, this.body.quaternion)
 
   if (this.isRoot) {
@@ -253,3 +255,5 @@ NodeSingleView.prototype.hide = function () {
 function random (max) {
   return -max + Math.random() * max * 2
 }
+
+export default NodeSingleView
