@@ -16,7 +16,7 @@ function NodeSingleView () {
 
   this.element = new THREE.Group()
 
-  geometry = new THREE.PlaneGeometry(1.1, 0.4, 2, 2)
+  geometry = new THREE.PlaneGeometry(1.6, 0.6, 2, 2)
   material = new THREE.MeshBasicMaterial({ color: 0x00, transparent: true })
   material.opacity = 0
   this.domPlane = new THREE.Mesh(geometry, material)
@@ -66,20 +66,38 @@ NodeSingleView.prototype.update = function () {
 }
 
 NodeSingleView.prototype.render = function () {
+  var health = this.model && this.model.data.health
+  var score = health ? health.score : null
+
   if (this.model) {
     var label = this.model.data.data && this.model.data.data.username
     var transport = this.model.data.transport
     var id = label ? label.slice(0, 5) : this.model.id.slice(-5)
+    var name, color, scoreColor
 
     if (this.isServer) {
-      this.labelElement.textContent = 'SERVER'
-      this.labelElement.style.color = '#44DD44'
+      name = 'SERVER'
+      color = '#44DD44'
+      scoreColor = '#88CC88'
+    } else if (this.isRoot) {
+      name = id
+      color = '#FF8C19'
+      scoreColor = '#FFAA55'
     } else if (transport === 'server') {
-      this.labelElement.textContent = id + ' [S]'
-      this.labelElement.style.color = '#00CED1'
+      name = id + ' [S]'
+      color = '#00CED1'
+      scoreColor = '#66DDE0'
     } else {
-      this.labelElement.textContent = id
-      this.labelElement.style.color = '#FFF'
+      name = id
+      color = '#FFF'
+      scoreColor = '#AAA'
+    }
+
+    this.labelElement.style.color = color
+    if (score != null) {
+      this.labelElement.innerHTML = '<span>' + name + '</span><span style="font-size:16px;color:' + scoreColor + '">' + score + '</span>'
+    } else {
+      this.labelElement.textContent = name
     }
   } else {
     this.labelElement.textContent = 'loading'
@@ -108,13 +126,25 @@ NodeSingleView.prototype.render = function () {
         this.element.remove(this.mesh)
         delete this.mesh
       }
+      if (this._ringMesh) {
+        this.element.remove(this._ringMesh)
+        delete this._ringMesh
+      }
     }
 
     if (!this.mesh) {
-      this.mesh = this.generateMesh(0.5, this.model ? 0xFF8C19 : 0x333333)
+      this.mesh = this.generateMesh(0.5, this.model ? 0x666666 : 0x333333)
       this.element.add(this.mesh)
       this.domPlane.position.y = -(0.5 + 0.4)
+
+      // White wireframe ring to identify root
+      var ringGeo = new THREE.SphereGeometry(0.55, 16, 16)
+      var ringMat = new THREE.MeshBasicMaterial({ color: 0xFFFFFF, wireframe: true, transparent: true, opacity: 0.4 })
+      this._ringMesh = new THREE.Mesh(ringGeo, ringMat)
+      this.element.add(this._ringMesh)
     }
+
+    this.renderHealthColor(score)
   } else {
     if (this._wasRoot || this._wasServer) {
       this.element.remove(this.mesh)
@@ -129,16 +159,7 @@ NodeSingleView.prototype.render = function () {
       this.domPlane.position.y = -(0.25 + 0.4)
     }
 
-    var breaks = this.model.data.data && this.model.data.data.breaks || []
-    var missed = breaks.reduce(function (prev, next) { return prev + next }, 0)
-    missed = missed > 100 && breaks !== this._lastBreaks
-    this._lastBreaks = breaks
-
-    var oldData = this.model.data.data && this.model.data.data.oldData
-    var sawOldData = oldData && oldData !== this._lastOldData && this.model.data.timestamp - oldData < 15000
-    this._lastOldData = oldData
-
-    this.renderColor(missed, sawOldData)
+    this.renderHealthColor(score)
 
     if (this.upstream !== this._lastUpstream) {
       this._nudge = this.body.position.clone()
@@ -155,47 +176,40 @@ NodeSingleView.prototype.generateMesh = function (radius, color) {
   return mesh
 }
 
-NodeSingleView.prototype.renderColor = function (missed, oldData) {
-  var needsLock = false
+NodeSingleView.prototype.renderHealthColor = function (score) {
   var color = null
 
-  if (this.upstream) {
-    if (this.upstream !== this._lastUpstream) {
-      if (oldData) {
-        color = 0xFFF41A
-      } else {
-        color = 0x1AB6FF
-      }
-      needsLock = true
-    } else if (!this._colorLock) {
-      if (missed) {
-        color = 0xFF441A
-        needsLock = true
-      } else {
-        color = 0xFF8C19
-      }
-    }
-  } else {
-    if (this.upstream !== this._lastUpstream && oldData) {
-      color = 0xFFF41A
-      needsLock = true
-    } else if (!this._colorLock) {
-      color = 0x666666
-    }
-  }
-
-  if (color) {
+  // Flash blue briefly on new upstream connection
+  if (this.upstream && this.upstream !== this._lastUpstream) {
+    color = 0x1AB6FF
+    this._colorLock = true
+    clearTimeout(this._colorLockTimer)
+    this._colorLockTimer = setTimeout(function () {
+      this._colorLock = false
+      this.render()
+    }.bind(this), 2000)
     this.mesh.material.color = new THREE.Color(color)
-
-    if (needsLock) {
-      this._colorLock = true
-      clearTimeout(this._colorLockTimer)
-      this._colorLockTimer = setTimeout(function () {
-        this._colorLock = false
-        this.render()
-      }.bind(this), 3500)
-    }
+    return
   }
+
+  if (this._colorLock) return
+
+  var connected = this.upstream || this.isRoot
+  if (!connected) {
+    color = 0x666666 // gray — disconnected
+  } else if (score == null) {
+    color = 0xFF8C19 // orange — connected but no score yet
+  } else if (score >= 80) {
+    color = 0x44CC44 // green — healthy
+  } else if (score >= 50) {
+    color = 0xFF8C19 // orange — moderate
+  } else if (score >= 20) {
+    color = 0xFFCC00 // yellow — degraded
+  } else {
+    color = 0xFF4444 // red — struggling
+  }
+
+  this.mesh.material.color = new THREE.Color(color)
 }
 
 NodeSingleView.prototype.preStep = function () {

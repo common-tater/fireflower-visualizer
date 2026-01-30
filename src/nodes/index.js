@@ -38,7 +38,10 @@ function NodeIndexView () {
 NodeIndexView.prototype.update = function () {
   this._lastUpdate = Date.now()
   CollectionView.prototype.update.apply(this, arguments)
-  this.rootNode.element.visible = this.rootNode.domElement.visible = !this.collection.hasRoot
+  var showPlaceholder = !this.collection.hasRoot
+  this.rootNode.element.visible = showPlaceholder
+  this.rootNode.domElement.visible = showPlaceholder
+  this.rootNode.labelElement.style.display = showPlaceholder ? '' : 'none'
 }
 
 NodeIndexView.prototype.setupPhysics = function () {
@@ -189,9 +192,21 @@ NodeIndexView.prototype.enterFrame = function () {
     serverSubview.element.quaternion.copy(serverSubview.body.quaternion)
   }
 
+  // Draw server-to-root connection line
+  if (serverSubview) {
+    var serverTarget = serverSubview.upstream ? serverSubview.upstream.element : this.rootNode.element
+    this._p2pPositions[p2pCount * 6] = serverTarget.position.x
+    this._p2pPositions[p2pCount * 6 + 1] = serverTarget.position.y
+    this._p2pPositions[p2pCount * 6 + 2] = serverTarget.position.z
+    this._p2pPositions[p2pCount * 6 + 3] = serverSubview.element.position.x
+    this._p2pPositions[p2pCount * 6 + 4] = serverSubview.element.position.y
+    this._p2pPositions[p2pCount * 6 + 5] = serverSubview.element.position.z
+    p2pCount++
+  }
+
   for (var i in this.subviews) {
     var subview = this.subviews[i]
-    if (subview.isServer) continue // position handled above
+    if (subview.isServer) continue // position handled above, line drawn above
     subview.element.position.copy(subview.body.position)
     subview.element.quaternion.copy(subview.body.quaternion)
     subview.body.velocity = subview.body.velocity.scale(0.75)
