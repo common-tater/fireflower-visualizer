@@ -194,7 +194,7 @@ NodeSingleView.prototype.renderHealthColor = function (score) {
 
   if (this._colorLock) return
 
-  var connected = this.upstream || this.isRoot
+  var connected = this.upstream || this.isRoot || (this.model && this.model.data.transport === 'server')
   if (!connected) {
     color = 0x666666 // gray — disconnected
   } else if (score == null) {

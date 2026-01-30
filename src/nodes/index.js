@@ -192,16 +192,16 @@ NodeIndexView.prototype.enterFrame = function () {
     serverSubview.element.quaternion.copy(serverSubview.body.quaternion)
   }
 
-  // Draw server-to-root connection line
+  // Draw server-to-root connection line (green, same as server connections)
   if (serverSubview) {
     var serverTarget = serverSubview.upstream ? serverSubview.upstream.element : this.rootNode.element
-    this._p2pPositions[p2pCount * 6] = serverTarget.position.x
-    this._p2pPositions[p2pCount * 6 + 1] = serverTarget.position.y
-    this._p2pPositions[p2pCount * 6 + 2] = serverTarget.position.z
-    this._p2pPositions[p2pCount * 6 + 3] = serverSubview.element.position.x
-    this._p2pPositions[p2pCount * 6 + 4] = serverSubview.element.position.y
-    this._p2pPositions[p2pCount * 6 + 5] = serverSubview.element.position.z
-    p2pCount++
+    this._serverPositions[serverCount * 6] = serverTarget.position.x
+    this._serverPositions[serverCount * 6 + 1] = serverTarget.position.y
+    this._serverPositions[serverCount * 6 + 2] = serverTarget.position.z
+    this._serverPositions[serverCount * 6 + 3] = serverSubview.element.position.x
+    this._serverPositions[serverCount * 6 + 4] = serverSubview.element.position.y
+    this._serverPositions[serverCount * 6 + 5] = serverSubview.element.position.z
+    serverCount++
   }
 
   for (var i in this.subviews) {
