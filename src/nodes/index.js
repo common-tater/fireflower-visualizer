@@ -123,7 +123,7 @@ NodeIndexView.prototype.setupConnectionGraph = function () {
   serverGeometry.computeBoundingSphere()
 
   this.serverConnections = new THREE.LineSegments(serverGeometry, new THREE.LineBasicMaterial({
-    color: 0x00CED1,
+    color: 0x44DD44,
     linewidth: 2.0
   }))
   this.group.add(this.serverConnections)
@@ -172,14 +172,36 @@ NodeIndexView.prototype.enterFrame = function () {
     this._serverPositions[i] = 0
   }
 
+  // Find the server subview if it exists
+  var serverSubview = null
+  for (var s in this.subviews) {
+    if (this.subviews[s].isServer) {
+      serverSubview = this.subviews[s]
+      break
+    }
+  }
+
   for (var i in this.subviews) {
     var subview = this.subviews[i]
     subview.element.position.copy(subview.body.position)
     subview.element.quaternion.copy(subview.body.quaternion)
     subview.body.velocity = subview.body.velocity.scale(0.75)
 
-    var target = subview.upstream ? subview.upstream.element : subview.element
+    // Skip drawing lines from the server node itself
+    if (subview.isServer) continue
+
     var isServer = subview.model && subview.model.data.transport === 'server'
+    var target
+
+    if (isServer && serverSubview) {
+      // Server-connected nodes draw lines to the server node
+      target = serverSubview.element
+    } else if (subview.upstream) {
+      target = subview.upstream.element
+    } else {
+      target = subview.element
+    }
+
     var positions = isServer ? this._serverPositions : this._p2pPositions
     var idx = isServer ? serverCount : p2pCount
 

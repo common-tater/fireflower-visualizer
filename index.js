@@ -22,30 +22,3 @@ var nodeIndexView = new NodeIndexView()
 nodeIndexView.collection = new Collection(db, NodeModel)
 nodeIndexView.show()
 
-// --- Controls ---
-
-// Reset button: clears all Firebase data
-var resetBtn = document.getElementById('reset-btn')
-resetBtn.addEventListener('click', function () {
-  firebaseDb.remove(firebaseDb.ref(rawDb, dbPath + '/requests'))
-  firebaseDb.remove(firebaseDb.ref(rawDb, dbPath + '/reports'))
-})
-
-// Server toggle: enables/disables the relay server via Firebase config
-var serverToggle = document.getElementById('server-toggle')
-var serverCheckbox = serverToggle.querySelector('input')
-var configRef = firebaseDb.ref(rawDb, dbPath + '/configuration/serverEnabled')
-
-// Read initial state
-firebaseDb.onValue(configRef, function (snapshot) {
-  var enabled = snapshot.val()
-  if (enabled === null) enabled = true // default to enabled
-  serverCheckbox.checked = enabled
-  serverToggle.classList.toggle('active', enabled)
-})
-
-serverCheckbox.addEventListener('change', function () {
-  var enabled = serverCheckbox.checked
-  serverToggle.classList.toggle('active', enabled)
-  firebaseDb.set(configRef, enabled)
-})

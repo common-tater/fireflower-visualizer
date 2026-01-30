@@ -16,6 +16,7 @@ NodeCollection.prototype.sort = function () {
   var now = realnow()
 
   this.hasRoot = false
+  this.hasServer = false
 
   for (var i in this.models) {
     var model = this.models[i]
@@ -24,7 +25,12 @@ NodeCollection.prototype.sort = function () {
       continue
     }
 
-    if (model.data.root) {
+    if (model.data.isServer && model.data.root) {
+      if (!this.hasServer) {
+        this.hasServer = true
+        sorted.push(model)
+      }
+    } else if (model.data.root) {
       if (!this.hasRoot) {
         this.hasRoot = true
         sorted.push(model)

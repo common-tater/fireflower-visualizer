@@ -53,6 +53,7 @@ NodeSingleView.prototype.show = function () {
 
 NodeSingleView.prototype.update = function () {
   this.isRoot = !this.model || this.model.data.root
+  this.isServer = this.model && this.model.data.isServer
 
   if (this.model && this.model.data.upstream) {
     this.upstream = this.superview.subviews[this.model.data.upstream]
@@ -70,7 +71,10 @@ NodeSingleView.prototype.render = function () {
     var transport = this.model.data.transport
     var id = label ? label.slice(0, 5) : this.model.id.slice(-5)
 
-    if (transport === 'server') {
+    if (this.isServer) {
+      this.labelElement.textContent = 'SERVER'
+      this.labelElement.style.color = '#44DD44'
+    } else if (transport === 'server') {
       this.labelElement.textContent = id + ' [S]'
       this.labelElement.style.color = '#00CED1'
     } else {
@@ -81,9 +85,25 @@ NodeSingleView.prototype.render = function () {
     this.labelElement.textContent = 'loading'
   }
 
-  if (this.isRoot) {
-    if (!this._wasRoot) {
+  // Server node: green, medium-sized, fixed position
+  if (this.isServer) {
+    if (!this._wasServer) {
+      this._wasServer = true
+      if (this.mesh) {
+        this.element.remove(this.mesh)
+        delete this.mesh
+      }
+    }
+
+    if (!this.mesh) {
+      this.mesh = this.generateMesh(0.4, 0x44DD44)
+      this.element.add(this.mesh)
+      this.domPlane.position.y = -(0.4 + 0.4)
+    }
+  } else if (this.isRoot) {
+    if (this._wasServer || !this._wasRoot) {
       this._wasRoot = true
+      delete this._wasServer
       if (this.mesh) {
         this.element.remove(this.mesh)
         delete this.mesh
@@ -96,10 +116,11 @@ NodeSingleView.prototype.render = function () {
       this.domPlane.position.y = -(0.5 + 0.4)
     }
   } else {
-    if (this._wasRoot) {
+    if (this._wasRoot || this._wasServer) {
       this.element.remove(this.mesh)
       delete this.mesh
       delete this._wasRoot
+      delete this._wasServer
     }
 
     if (!this.mesh) {
@@ -180,6 +201,14 @@ NodeSingleView.prototype.renderColor = function (missed, oldData) {
 NodeSingleView.prototype.preStep = function () {
   this.body.quaternion.copy(this.superview.group.quaternion.clone().invert())
   this.body.quaternion.mult(this.superview.camera.quaternion, this.body.quaternion)
+
+  if (this.isServer) {
+    // Fixed position: off to the right side, not orbiting
+    this.body.position.set(6, 3, 0)
+    this.body.velocity.set(0, 0, 0)
+    this.body.force.set(0, 0, 0)
+    return
+  }
 
   if (this.isRoot) {
     return
