@@ -17,7 +17,7 @@ function NodeSingleView () {
   this.element = new THREE.Group()
 
   geometry = new THREE.PlaneGeometry(1.1, 0.4, 2, 2)
-  material = new THREE.MeshBasicMaterial({ color: 0x00 })
+  material = new THREE.MeshBasicMaterial({ color: 0x00, transparent: true })
   material.opacity = 0
   this.domPlane = new THREE.Mesh(geometry, material)
   this.domPlane.position.z = -0.1
@@ -25,6 +25,8 @@ function NodeSingleView () {
 
   this.labelElement = document.createElement('div')
   this.labelElement.className = 'label'
+  this.labelElement.style.backgroundColor = 'transparent'
+  this.labelElement.style.color = 'white'
   this.domElement = new CSS3DObject(this.labelElement)
   this.domElement.scale.x = 1 / 100
   this.domElement.scale.y = this.domElement.scale.x
