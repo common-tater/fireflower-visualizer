@@ -181,14 +181,20 @@ NodeIndexView.prototype.enterFrame = function () {
     }
   }
 
+  // Counter-rotate server node so it stays fixed in world space
+  if (serverSubview) {
+    var fixedWorldPos = new THREE.Vector3(-6, 2, 0)
+    var inverseQuat = this.group.quaternion.clone().invert()
+    serverSubview.element.position.copy(fixedWorldPos.applyQuaternion(inverseQuat))
+    serverSubview.element.quaternion.copy(serverSubview.body.quaternion)
+  }
+
   for (var i in this.subviews) {
     var subview = this.subviews[i]
+    if (subview.isServer) continue // position handled above
     subview.element.position.copy(subview.body.position)
     subview.element.quaternion.copy(subview.body.quaternion)
     subview.body.velocity = subview.body.velocity.scale(0.75)
-
-    // Skip drawing lines from the server node itself
-    if (subview.isServer) continue
 
     var isServer = subview.model && subview.model.data.transport === 'server'
     var target
