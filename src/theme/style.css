@@ -1,5 +1,45 @@
-* {
+/* ── Design tokens (shared with 2D visualizer) ── */
+:root {
+  /* Colors */
+  --color-bg: #1C1C1C;
+  --color-bg-panel: rgba(15, 15, 20, 0.85);
+  --color-border: rgba(255, 255, 255, 0.06);
+  --color-text: #ccc;
+  --color-text-muted: #999;
+  --color-text-dim: #888;
+  --color-text-faint: #666;
+  --color-text-heading: #555;
+  --color-text-value: #aaa;
+
+  /* Status colors */
+  --color-healthy: #44CC44;
+  --color-moderate: #FF8C19;
+  --color-degraded: #FFCC00;
+  --color-struggling: #FF4444;
+  --color-disconnected: #666666;
+  --color-server: #00CED1;
+  --color-server-node: #44DD44;
+  --color-p2p-link: #686868;
+
+  /* Typography */
+  --font-mono: 'SF Mono', 'Cascadia Code', 'Fira Code', 'JetBrains Mono', 'Consolas', monospace;
+  --font-size-xs: 10px;
+  --font-size-sm: 11px;
+  --font-size-base: 13px;
+
+  /* Panel styling */
+  --panel-radius: 10px;
+  --panel-padding: 12px 16px;
+  --panel-blur: blur(12px);
+}
+
+/* ── Reset ── */
+*,
+*::before,
+*::after {
   box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
 html,
@@ -8,6 +48,108 @@ body {
   margin: 0;
   padding: 0;
   position: relative;
-  font-family: monospace;
-  color: #444;
+  font-family: var(--font-mono);
+  color: var(--color-text-faint);
+  background: #111;
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background: rgba(26, 182, 255, 0.3);
+  color: #fff;
+}
+
+/* ── UI overlay panels ── */
+.ui-overlay {
+  position: fixed;
+  z-index: 100;
+  pointer-events: none;
+}
+
+.ui-overlay > * {
+  pointer-events: auto;
+}
+
+/* Shared panel style (glassmorphic) */
+.ui-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: var(--panel-padding);
+  background: var(--color-bg-panel);
+  border: 1px solid var(--color-border);
+  border-radius: var(--panel-radius);
+  backdrop-filter: var(--panel-blur);
+  -webkit-backdrop-filter: var(--panel-blur);
+}
+
+.ui-panel-title {
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  color: var(--color-text-heading);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 2px;
+}
+
+/* Config panel — top right */
+.ui-config {
+  top: 20px;
+  right: 20px;
+}
+
+/* Stats panel — below config */
+.ui-stats {
+  top: 110px;
+  right: 20px;
+}
+
+/* Legend panel — bottom left */
+.ui-legend {
+  bottom: 20px;
+  left: 20px;
+  gap: 8px;
+}
+
+/* Stat rows (used in config and stats panels) */
+.stat-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-faint);
+}
+
+.stat-value {
+  color: var(--color-text-value);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Legend items */
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-dim);
+  letter-spacing: 0.02em;
+}
+
+.legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.legend-line {
+  width: 16px;
+  height: 2px;
+  border-radius: 1px;
+  flex-shrink: 0;
 }

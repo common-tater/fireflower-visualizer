@@ -10,7 +10,127 @@
     <div id="node-index">
       <div id="dom"></div>
       <canvas id="webgl"></canvas>
+
+      <!-- Header -->
+      <div class="ui-overlay ui-header">
+        <div class="title">fireflower <span>visualizer</span></div>
+        <div class="node-count" id="ui-node-count"></div>
+      </div>
+
+      <!-- Legend -->
+      <div class="ui-overlay ui-legend">
+        <div class="legend-title">Legend</div>
+        <div class="legend-item">
+          <div class="legend-dot" style="background:#44CC44"></div>
+          Healthy
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot" style="background:#FF8C19"></div>
+          Moderate
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot" style="background:#FFCC00"></div>
+          Degraded
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot" style="background:#FF4444"></div>
+          Struggling
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot" style="background:#666666"></div>
+          Disconnected
+        </div>
+        <div class="legend-item">
+          <div class="legend-line" style="background:#444444"></div>
+          P2P link
+        </div>
+        <div class="legend-item">
+          <div class="legend-line" style="background:#44DD44"></div>
+          Server link
+        </div>
+      </div>
+
+      <!-- Stats -->
+      <div class="ui-overlay ui-stats" id="ui-stats">
+        <div class="stats-title">Network</div>
+        <div class="stat-row">
+          <span>Nodes</span>
+          <span class="stat-value" id="stat-nodes">0</span>
+        </div>
+        <div class="stat-row">
+          <span>P2P</span>
+          <span class="stat-value" id="stat-p2p">0</span>
+        </div>
+        <div class="stat-row">
+          <span>Server</span>
+          <span class="stat-value" id="stat-server">0</span>
+        </div>
+      </div>
     </div>
+
+    <!-- Config (read-only) -->
+    <div class="ui-overlay ui-panel ui-config">
+      <div class="ui-panel-title">Config</div>
+      <div class="stat-row">
+        <span>K</span>
+        <span class="stat-value" id="config-k">–</span>
+      </div>
+      <div class="stat-row">
+        <span>Server Cap</span>
+        <span class="stat-value" id="config-server-capacity">∞</span>
+      </div>
+    </div>
+
+    <!-- Stats (read-only) -->
+    <div class="ui-overlay ui-panel ui-stats">
+      <div class="ui-panel-title">Network</div>
+      <div class="stat-row">
+        <span>Nodes</span>
+        <span class="stat-value" id="stat-nodes">0</span>
+      </div>
+      <div class="stat-row">
+        <span>P2P</span>
+        <span class="stat-value" id="stat-p2p">0</span>
+      </div>
+      <div class="stat-row">
+        <span>Server</span>
+        <span class="stat-value" id="stat-server">0</span>
+      </div>
+    </div>
+
+    <!-- Legend (read-only) -->
+    <div class="ui-overlay ui-panel ui-legend">
+      <div class="ui-panel-title">Legend</div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#44CC44"></div>
+        Healthy
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#FF8C19"></div>
+        Moderate
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#FFCC00"></div>
+        Degraded
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#FF4444"></div>
+        Struggling
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#666666"></div>
+        Disconnected
+      </div>
+      <div class="legend-item">
+        <div class="legend-line" style="background:#686868"></div>
+        P2P link
+      </div>
+      <div class="legend-item">
+        <div class="legend-line" style="background:#44DD44"></div>
+        Server link
+      </div>
+    </div>
+
   </body>
   <script type="text/javascript" src="/build.js"></script>
 </html>

@@ -23,6 +23,7 @@ function NodeIndexView () {
   this.setupCamera()
   this.setupConnectionGraph()
   this.setupClickEvents()
+  this.setupOverlay()
 
   window.addEventListener('resize', this.onresize)
   this.onresize()
@@ -139,6 +140,23 @@ NodeIndexView.prototype.setupConnectionGraph = function () {
   this.rootNode.show()
 }
 
+NodeIndexView.prototype.setupOverlay = function () {
+  this._statNodes = document.getElementById('stat-nodes')
+  this._statP2p = document.getElementById('stat-p2p')
+  this._statServer = document.getElementById('stat-server')
+  this._uiNodeCount = document.getElementById('ui-node-count')
+}
+
+NodeIndexView.prototype.updateOverlay = function (p2pCount, serverCount) {
+  var nodeCount = Object.keys(this.subviews).length
+  if (this._statNodes) this._statNodes.textContent = nodeCount
+  if (this._statP2p) this._statP2p.textContent = p2pCount
+  if (this._statServer) this._statServer.textContent = serverCount
+  if (this._uiNodeCount) {
+    this._uiNodeCount.innerHTML = '<strong>' + nodeCount + '</strong> node' + (nodeCount !== 1 ? 's' : '') + ' online'
+  }
+}
+
 NodeIndexView.prototype.setupClickEvents = function () {
   this.raycaster = new THREE.Raycaster()
   this.clickVector = new THREE.Vector3()
@@ -241,6 +259,8 @@ NodeIndexView.prototype.enterFrame = function () {
   this.serverConnections.geometry.attributes.position.needsUpdate = true
   this.webglRenderer.render(this.scene, this.camera)
   this.domRenderer.render(this.scene, this.camera)
+
+  this.updateOverlay(p2pCount, serverCount)
 
   window.requestAnimationFrame(this.enterFrame)
 }

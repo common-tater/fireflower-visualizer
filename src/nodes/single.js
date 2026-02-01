@@ -94,10 +94,11 @@ NodeSingleView.prototype.render = function () {
     }
 
     this.labelElement.style.color = color
+    var capacityHtml = this._renderCapacity()
     if (score != null) {
-      this.labelElement.innerHTML = '<span>' + name + '</span><span style="font-size:16px;color:' + scoreColor + '">' + score + '</span>'
+      this.labelElement.innerHTML = '<span>' + name + '</span><span class="score" style="color:' + scoreColor + '">' + score + (capacityHtml ? ' ' + capacityHtml : '') + '</span>'
     } else {
-      this.labelElement.textContent = name
+      this.labelElement.innerHTML = '<span>' + name + '</span>' + (capacityHtml ? '<span class="score" style="color:' + scoreColor + '">' + capacityHtml + '</span>' : '')
     }
   } else {
     this.labelElement.textContent = 'loading'
@@ -166,6 +167,27 @@ NodeSingleView.prototype.render = function () {
       this._nudge = this._nudge.cross(new CANNON.Vec3(5, 5, 5))
     }
   }
+}
+
+NodeSingleView.prototype._renderCapacity = function () {
+  if (!this.model || this.isRoot) return ''
+  var health = this.model.data.health
+  if (!health) return ''
+
+  var down = health.downstreamCount || 0
+  var cap, full
+
+  if (this.isServer) {
+    cap = this.superview && this.superview.serverCapacity
+    full = this.superview && this.superview.serverAtCapacity
+  } else {
+    cap = this.superview && this.superview.globalK
+    full = cap != null && down >= cap
+  }
+
+  if (cap == null) return ''
+  var cls = full ? 'capacity full' : 'capacity'
+  return '<span class="' + cls + '">↓' + down + '/' + cap + '</span>'
 }
 
 NodeSingleView.prototype.generateMesh = function (radius, color) {
