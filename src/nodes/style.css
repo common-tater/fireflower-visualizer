@@ -1,12 +1,42 @@
+/* ── Main container ── */
 #node-index {
   width: 100%;
   height: 100%;
-  background-color: #1C1C1C;
+  position: relative;
+  background: radial-gradient(ellipse at 50% 40%, #1e1e2a 0%, #141418 60%, #0d0d10 100%);
+  overflow: hidden;
 }
 
+/* Subtle grid overlay */
+#node-index::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.015) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.015) 1px, transparent 1px);
+  background-size: 60px 60px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Soft vignette */
+#node-index::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at center, transparent 50%, rgba(0, 0, 0, 0.4) 100%);
+  pointer-events: none;
+  z-index: 4;
+}
+
+/* ── Renderer layers ── */
 #node-index #dom {
   width: 100%;
   height: 100%;
+  position: relative;
+  z-index: 2;
+  pointer-events: none;
 }
 
 #node-index #webgl {
@@ -14,21 +44,177 @@
   height: 100%;
   position: absolute;
   top: 0;
+  left: 0;
   z-index: 1;
 }
 
+/* ── Node labels ── */
 #node-index #dom .label {
-  font-size: 22px;
-  font-family: monospace;
-  color: #FFF;
+  font-size: 18px;
+  font-family: inherit;
+  font-weight: 500;
+  color: #fff;
   background-color: transparent;
-  text-shadow: 1px 1px 2px #000;
+  text-shadow:
+    0 0 6px rgba(0, 0, 0, 0.9),
+    0 1px 3px rgba(0, 0, 0, 0.7);
   width: 160px;
   height: 50px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: 2px;
   overflow: visible;
   line-height: 1.2;
+  letter-spacing: 0.04em;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+  user-select: none;
+}
+
+#node-index #dom .label span {
+  display: block;
+}
+
+#node-index #dom .label .score {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  opacity: 0.85;
+  padding: 1px 6px;
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.35);
+}
+
+/* ── UI overlay panels ── */
+.ui-overlay {
+  position: absolute;
+  z-index: 5;
+  pointer-events: none;
+}
+
+.ui-overlay > * {
+  pointer-events: auto;
+}
+
+/* Header bar */
+.ui-header {
+  top: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 24px;
+}
+
+.ui-header .title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #e0e0e0;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.ui-header .title span {
+  color: #555;
+  font-weight: 400;
+}
+
+.ui-header .node-count {
+  font-size: 12px;
+  color: #666;
+  letter-spacing: 0.04em;
+}
+
+.ui-header .node-count strong {
+  color: #999;
+  font-weight: 600;
+}
+
+/* Legend panel */
+.ui-legend {
+  bottom: 20px;
+  left: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px 18px;
+  background: rgba(15, 15, 20, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.ui-legend .legend-title {
+  font-size: 10px;
+  font-weight: 600;
+  color: #555;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 2px;
+}
+
+.ui-legend .legend-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 11px;
+  color: #888;
+  letter-spacing: 0.02em;
+}
+
+.ui-legend .legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.ui-legend .legend-line {
+  width: 16px;
+  height: 2px;
+  border-radius: 1px;
+  flex-shrink: 0;
+}
+
+/* Stats panel */
+.ui-stats {
+  bottom: 20px;
+  right: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 14px 18px;
+  background: rgba(15, 15, 20, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.ui-stats .stats-title {
+  font-size: 10px;
+  font-weight: 600;
+  color: #555;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 2px;
+}
+
+.ui-stats .stat-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  font-size: 11px;
+  color: #666;
+}
+
+.ui-stats .stat-row .stat-value {
+  color: #aaa;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
 }

@@ -95,9 +95,9 @@ NodeSingleView.prototype.render = function () {
 
     this.labelElement.style.color = color
     if (score != null) {
-      this.labelElement.innerHTML = '<span>' + name + '</span><span style="font-size:16px;color:' + scoreColor + '">' + score + '</span>'
+      this.labelElement.innerHTML = '<span>' + name + '</span><span class="score" style="color:' + scoreColor + '">' + score + '</span>'
     } else {
-      this.labelElement.textContent = name
+      this.labelElement.innerHTML = '<span>' + name + '</span>'
     }
   } else {
     this.labelElement.textContent = 'loading'
