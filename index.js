@@ -22,3 +22,13 @@ var nodeIndexView = new NodeIndexView()
 nodeIndexView.collection = new Collection(db, NodeModel)
 nodeIndexView.show()
 
+// Watch serverCapacity config and display it
+var serverCapacityValueEl = document.getElementById('server-capacity-value')
+if (serverCapacityValueEl) {
+  var serverCapacityRef = firebaseDb.ref(rawDb, dbPath + '/configuration/serverCapacity')
+  firebaseDb.onValue(serverCapacityRef, function (snapshot) {
+    var capacity = snapshot.val()
+    serverCapacityValueEl.textContent = capacity || '∞'
+  })
+}
+
