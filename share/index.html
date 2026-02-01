@@ -1,136 +1,102 @@
 <!doctype html>
-<html>
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, minimal-ui">
-    <title>fireflower</title>
-    <link rel="stylesheet" href="/build.css">
-  </head>
-  <body>
-    <div id="node-index">
-      <div id="dom"></div>
-      <canvas id="webgl"></canvas>
+<html lang="en">
 
-      <!-- Header -->
-      <div class="ui-overlay ui-header">
-        <div class="title">fireflower <span>visualizer</span></div>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, minimal-ui">
+  <title>fireflower</title>
+  <link rel="stylesheet" href="/build.css?v=3">
+</head>
+
+<body>
+  <div id="node-index">
+    <div id="dom"></div>
+    <canvas id="webgl"></canvas>
+
+    <!-- UI Layer -->
+    <div class="ui-layer">
+
+      <!-- Top Left: Header -->
+      <div class="header-bar">
+        <div class="app-title">fireflower <span>visualizer</span></div>
         <div class="node-count" id="ui-node-count"></div>
       </div>
 
-      <!-- Legend -->
-      <div class="ui-overlay ui-legend">
-        <div class="legend-title">Legend</div>
-        <div class="legend-item">
-          <div class="legend-dot" style="background:#44CC44"></div>
-          Healthy
+      <!-- Top Right: Config & Network Stack -->
+      <div class="panel-stack top-right">
+
+        <!-- Config Panel -->
+        <div class="ui-panel">
+          <div class="panel-header">Config</div>
+          <div class="stat-row">
+            <span>K</span>
+            <span class="stat-value" id="config-k">–</span>
+          </div>
+          <div class="stat-row">
+            <span>Server Cap</span>
+            <span class="stat-value" id="config-server-capacity">∞</span>
+          </div>
         </div>
-        <div class="legend-item">
-          <div class="legend-dot" style="background:#FF8C19"></div>
-          Moderate
+
+        <!-- Network Stats Panel -->
+        <div class="ui-panel" id="ui-stats">
+          <div class="panel-header">Network</div>
+          <div class="stat-row">
+            <span>Nodes</span>
+            <span class="stat-value" id="stat-nodes">0</span>
+          </div>
+          <div class="stat-row">
+            <span>P2P</span>
+            <span class="stat-value" id="stat-p2p">0</span>
+          </div>
+          <div class="stat-row">
+            <span>Server</span>
+            <span class="stat-value" id="stat-server">0</span>
+          </div>
         </div>
-        <div class="legend-item">
-          <div class="legend-dot" style="background:#FFCC00"></div>
-          Degraded
-        </div>
-        <div class="legend-item">
-          <div class="legend-dot" style="background:#FF4444"></div>
-          Struggling
-        </div>
-        <div class="legend-item">
-          <div class="legend-dot" style="background:#666666"></div>
-          Disconnected
-        </div>
-        <div class="legend-item">
-          <div class="legend-line" style="background:#444444"></div>
-          P2P link
-        </div>
-        <div class="legend-item">
-          <div class="legend-line" style="background:#44DD44"></div>
-          Server link
+
+      </div>
+
+      <!-- Bottom Left: Legend -->
+      <div class="panel-stack bottom-left">
+        <div class="ui-panel">
+          <div class="panel-header">Legend</div>
+          <div class="legend-item">
+            <div class="legend-dot" style="background:var(--c-healthy)"></div>
+            Healthy
+          </div>
+          <div class="legend-item">
+            <div class="legend-dot" style="background:var(--c-moderate)"></div>
+            Moderate
+          </div>
+          <div class="legend-item">
+            <div class="legend-dot" style="background:var(--c-degraded)"></div>
+            Degraded
+          </div>
+          <div class="legend-item">
+            <div class="legend-dot" style="background:var(--c-struggling)"></div>
+            Struggling
+          </div>
+          <div class="legend-item">
+            <div class="legend-dot" style="background:var(--c-disconnected)"></div>
+            Disconnected
+          </div>
+          <div class="legend-item">
+            <div class="legend-line" style="background:var(--c-link-p2p)"></div>
+            P2P link
+          </div>
+          <div class="legend-item">
+            <div class="legend-line" style="background:var(--c-link-server)"></div>
+            Server link
+          </div>
         </div>
       </div>
 
-      <!-- Stats -->
-      <div class="ui-overlay ui-stats" id="ui-stats">
-        <div class="stats-title">Network</div>
-        <div class="stat-row">
-          <span>Nodes</span>
-          <span class="stat-value" id="stat-nodes">0</span>
-        </div>
-        <div class="stat-row">
-          <span>P2P</span>
-          <span class="stat-value" id="stat-p2p">0</span>
-        </div>
-        <div class="stat-row">
-          <span>Server</span>
-          <span class="stat-value" id="stat-server">0</span>
-        </div>
-      </div>
     </div>
+  </div>
 
-    <!-- Config (read-only) -->
-    <div class="ui-overlay ui-panel ui-config">
-      <div class="ui-panel-title">Config</div>
-      <div class="stat-row">
-        <span>K</span>
-        <span class="stat-value" id="config-k">–</span>
-      </div>
-      <div class="stat-row">
-        <span>Server Cap</span>
-        <span class="stat-value" id="config-server-capacity">∞</span>
-      </div>
-    </div>
+</body>
+<script type="text/javascript" src="/build.js"></script>
 
-    <!-- Stats (read-only) -->
-    <div class="ui-overlay ui-panel ui-stats">
-      <div class="ui-panel-title">Network</div>
-      <div class="stat-row">
-        <span>Nodes</span>
-        <span class="stat-value" id="stat-nodes">0</span>
-      </div>
-      <div class="stat-row">
-        <span>P2P</span>
-        <span class="stat-value" id="stat-p2p">0</span>
-      </div>
-      <div class="stat-row">
-        <span>Server</span>
-        <span class="stat-value" id="stat-server">0</span>
-      </div>
-    </div>
-
-    <!-- Legend (read-only) -->
-    <div class="ui-overlay ui-panel ui-legend">
-      <div class="ui-panel-title">Legend</div>
-      <div class="legend-item">
-        <div class="legend-dot" style="background:#44CC44"></div>
-        Healthy
-      </div>
-      <div class="legend-item">
-        <div class="legend-dot" style="background:#FF8C19"></div>
-        Moderate
-      </div>
-      <div class="legend-item">
-        <div class="legend-dot" style="background:#FFCC00"></div>
-        Degraded
-      </div>
-      <div class="legend-item">
-        <div class="legend-dot" style="background:#FF4444"></div>
-        Struggling
-      </div>
-      <div class="legend-item">
-        <div class="legend-dot" style="background:#666666"></div>
-        Disconnected
-      </div>
-      <div class="legend-item">
-        <div class="legend-line" style="background:#686868"></div>
-        P2P link
-      </div>
-      <div class="legend-item">
-        <div class="legend-line" style="background:#44DD44"></div>
-        Server link
-      </div>
-    </div>
-
-  </body>
-  <script type="text/javascript" src="/build.js"></script>
 </html>

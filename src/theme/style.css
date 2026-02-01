@@ -1,155 +1,157 @@
-/* ── Design tokens (shared with 2D visualizer) ── */
+/* ── Design System Tokens ── */
 :root {
-  /* Colors */
-  --color-bg: #1C1C1C;
-  --color-bg-panel: rgba(15, 15, 20, 0.85);
-  --color-border: rgba(255, 255, 255, 0.06);
-  --color-text: #ccc;
-  --color-text-muted: #999;
-  --color-text-dim: #888;
-  --color-text-faint: #666;
-  --color-text-heading: #555;
-  --color-text-value: #aaa;
+  /* Colors - Palette */
+  --c-dark-base: #1C1C1C;
+  --c-dark-surface: rgba(15, 15, 20, 0.85);
+  --c-border: rgba(255, 255, 255, 0.08);
 
-  /* Status colors */
-  --color-healthy: #44CC44;
-  --color-moderate: #FF8C19;
-  --color-degraded: #FFCC00;
-  --color-struggling: #FF4444;
-  --color-disconnected: #666666;
-  --color-server: #00CED1;
-  --color-server-node: #44DD44;
-  --color-p2p-link: #686868;
+  /* Colors - Text */
+  --c-text-primary: #e0e0e0;
+  --c-text-secondary: #aaa;
+  --c-text-tertiary: #666;
+  --c-text-accent: #555;
+
+  /* Colors - Status */
+  --c-healthy: #44CC44;
+  --c-moderate: #FF8C19;
+  --c-degraded: #FFCC00;
+  --c-struggling: #FF4444;
+  --c-disconnected: #666666;
+  --c-server: #00CED1;
+  --c-server-node: #44DD44;
+  --c-link-p2p: #686868;
+  --c-link-server: #44DD44;
 
   /* Typography */
   --font-mono: 'SF Mono', 'Cascadia Code', 'Fira Code', 'JetBrains Mono', 'Consolas', monospace;
-  --font-size-xs: 10px;
-  --font-size-sm: 11px;
-  --font-size-base: 13px;
+  --text-xs: 10px;
+  --text-sm: 11px;
+  --text-base: 13px;
 
-  /* Panel styling */
-  --panel-radius: 10px;
-  --panel-padding: 12px 16px;
-  --panel-blur: blur(12px);
+  /* Layout & Spacing */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 12px;
+  --space-lg: 16px;
+  --panel-radius: 12px;
+  --panel-padding: var(--space-md) var(--space-lg);
+  --panel-blur: blur(16px);
+  --z-overlay: 100;
 }
 
 /* ── Reset ── */
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
-
-html,
-body {
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body {
   height: 100%;
-  margin: 0;
-  padding: 0;
-  position: relative;
   font-family: var(--font-mono);
-  color: var(--color-text-faint);
+  color: var(--c-text-secondary);
   background: #111;
   overflow: hidden;
   -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-rendering: optimizeLegibility;
 }
+::selection { background: rgba(26, 182, 255, 0.3); color: #fff; }
 
-::selection {
-  background: rgba(26, 182, 255, 0.3);
-  color: #fff;
-}
-
-/* ── UI overlay panels ── */
-.ui-overlay {
+/* ── UI Layer ── */
+.ui-layer {
   position: fixed;
-  z-index: 100;
+  inset: 0;
+  z-index: var(--z-overlay);
   pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 24px;
 }
 
-.ui-overlay > * {
-  pointer-events: auto;
+/* Allow interaction with UI elements */
+.ui-layer > * { pointer-events: auto; }
+
+/* ── Stacks & Layout Utilities ── */
+.panel-stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  position: absolute;
 }
 
-/* Shared panel style (glassmorphic) */
+/* Positioning variants */
+.panel-stack.top-right { top: 24px; right: 24px; align-items: flex-end; }
+.panel-stack.bottom-left { bottom: 24px; left: 24px; align-items: flex-start; }
+.panel-stack.bottom-right { bottom: 24px; right: 24px; align-items: flex-end; }
+
+/* ── Components: Panels ── */
 .ui-panel {
   display: flex;
   flex-direction: column;
   gap: 6px;
   padding: var(--panel-padding);
-  background: var(--color-bg-panel);
-  border: 1px solid var(--color-border);
+  background: var(--c-dark-surface);
+  border: 1px solid var(--c-border);
   border-radius: var(--panel-radius);
   backdrop-filter: var(--panel-blur);
   -webkit-backdrop-filter: var(--panel-blur);
+  min-width: 180px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.2);
 }
 
-.ui-panel-title {
-  font-size: var(--font-size-xs);
-  font-weight: 600;
-  color: var(--color-text-heading);
+.panel-header {
+  font-size: var(--text-xs);
+  font-weight: 700;
+  color: var(--c-text-accent);
   letter-spacing: 0.1em;
   text-transform: uppercase;
   margin-bottom: 2px;
 }
 
-/* Config panel — top right */
-.ui-config {
-  top: 20px;
-  right: 20px;
-}
-
-/* Stats panel — below config */
-.ui-stats {
-  top: 110px;
-  right: 20px;
-}
-
-/* Legend panel — bottom left */
-.ui-legend {
-  bottom: 20px;
-  left: 20px;
-  gap: 8px;
-}
-
-/* Stat rows (used in config and stats panels) */
+/* ── Components: Data Rows ── */
 .stat-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 20px;
-  font-size: var(--font-size-sm);
-  color: var(--color-text-faint);
+  font-size: var(--text-sm);
+  color: var(--c-text-tertiary);
 }
 
 .stat-value {
-  color: var(--color-text-value);
+  color: var(--c-text-secondary);
   font-weight: 600;
   font-variant-numeric: tabular-nums;
 }
 
-/* Legend items */
+/* ── Components: Legend ── */
 .legend-item {
   display: flex;
   align-items: center;
   gap: 10px;
-  font-size: var(--font-size-sm);
-  color: var(--color-text-dim);
-  letter-spacing: 0.02em;
+  font-size: var(--text-sm);
+  color: var(--c-text-secondary);
+  opacity: 0.8;
 }
 
-.legend-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  flex-shrink: 0;
+.legend-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.legend-line { width: 16px; height: 2px; border-radius: 1px; flex-shrink: 0; }
+
+/* ── Components: Header Bar ── */
+.header-bar {
+  position: absolute;
+  top: 24px; left: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
-.legend-line {
-  width: 16px;
-  height: 2px;
-  border-radius: 1px;
-  flex-shrink: 0;
+.app-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--c-text-primary);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
 }
+.app-title span { color: var(--c-text-accent); font-weight: 400; }
+
+.node-count {
+  font-size: var(--text-xs);
+  color: var(--c-text-tertiary);
+}
+.node-count strong { color: var(--c-text-secondary); }
