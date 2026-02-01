@@ -87,6 +87,17 @@
   background: rgba(0, 0, 0, 0.35);
 }
 
+#node-index #dom .label .capacity {
+  font-size: 10px;
+  font-weight: 400;
+  opacity: 0.7;
+}
+
+#node-index #dom .label .capacity.full {
+  color: #FF4444;
+  opacity: 1;
+}
+
 /* ── UI overlay panels ── */
 .ui-overlay {
   position: absolute;

@@ -26,23 +26,27 @@ nodeIndexView.show()
 
 // Watch K from Firebase config
 var configKEl = document.getElementById('config-k')
-if (configKEl) {
-  var kRef = firebaseDb.ref(rawDb, dbPath + '/configuration/K')
-  firebaseDb.onValue(kRef, function (snapshot) {
-    var k = snapshot.val()
-    configKEl.textContent = k != null ? k : '–'
-  })
-}
+var kRef = firebaseDb.ref(rawDb, dbPath + '/configuration/K')
+firebaseDb.onValue(kRef, function (snapshot) {
+  var k = snapshot.val()
+  if (configKEl) configKEl.textContent = k != null ? k : '–'
+  nodeIndexView.globalK = k
+})
 
 // Watch serverCapacity from Firebase config
 var configCapacityEl = document.getElementById('config-server-capacity')
-if (configCapacityEl) {
-  var capacityRef = firebaseDb.ref(rawDb, dbPath + '/configuration/serverCapacity')
-  firebaseDb.onValue(capacityRef, function (snapshot) {
-    var capacity = snapshot.val()
-    configCapacityEl.textContent = capacity || '∞'
-  })
-}
+var capacityRef = firebaseDb.ref(rawDb, dbPath + '/configuration/serverCapacity')
+firebaseDb.onValue(capacityRef, function (snapshot) {
+  var capacity = snapshot.val()
+  if (configCapacityEl) configCapacityEl.textContent = capacity || '∞'
+  nodeIndexView.serverCapacity = capacity
+})
+
+// Watch serverAtCapacity from Firebase config
+var atCapacityRef = firebaseDb.ref(rawDb, dbPath + '/configuration/serverAtCapacity')
+firebaseDb.onValue(atCapacityRef, function (snapshot) {
+  nodeIndexView.serverAtCapacity = !!snapshot.val()
+})
 
 // ── Read-only stats from reports ──
 
