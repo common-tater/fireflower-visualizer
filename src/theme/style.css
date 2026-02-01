@@ -11,3 +11,29 @@ body {
   font-family: monospace;
   color: #444;
 }
+
+#stats-overlay {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: rgba(15, 15, 20, 0.9);
+  color: #ccc;
+  padding: 12px 16px;
+  border-radius: 6px;
+  font-family: 'SF Mono', 'Cascadia Code', 'Fira Code', monospace;
+  font-size: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  z-index: 100;
+}
+
+#stats-overlay .stat-row {
+  display: flex;
+  gap: 8px;
+  color: #999;
+}
+
+#stats-overlay .stat-row span:last-child {
+  color: #ccc;
+  font-weight: 500;
+}
