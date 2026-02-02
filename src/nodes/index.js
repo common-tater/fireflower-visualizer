@@ -137,6 +137,15 @@ NodeIndexView.prototype.setupConnectionGraph = function () {
   this.rootNode.superview = this
   this.world.add(this.rootNode.body)
   this.group.add(this.rootNode.element)
+
+  // World Anchors (Physics-Safe CANNON.Vec3)
+  this.P2P_ANCHOR = new CANNON.Vec3(6, 0, 0)
+  this.SERVER_ANCHOR = new CANNON.Vec3(-6, 0, 0)
+  this.ZERO_VEC = new CANNON.Vec3(0, 0, 0)
+  this.serverCount = 0
+  this.p2pCount = 0
+  this.hasServer = false // true when the server node itself exists (not transport count)
+
   this.rootNode.show()
 }
 
@@ -169,6 +178,20 @@ NodeIndexView.prototype.setupClickEvents = function () {
 }
 
 NodeIndexView.prototype.enterFrame = function () {
+  var p2pCount = 0
+  var serverCount = 0
+
+  // Pre-calculate counts so subviews have accurate context during preStep
+  for (var id in this.subviews) {
+    if (this.subviews[id].model && this.subviews[id].model.data.transport === 'server') {
+      serverCount++
+    } else {
+      p2pCount++
+    }
+  }
+  this.serverCount = serverCount
+  this.p2pCount = p2pCount
+
   this.world.step(this.timeStep)
 
   if (this._click) {
@@ -181,11 +204,8 @@ NodeIndexView.prototype.enterFrame = function () {
     this.group.rotation.y += 0.005
   }
 
-  this.rootNode.element.position.copy(this.rootNode.body.position)
-  this.rootNode.element.quaternion.copy(this.rootNode.body.quaternion)
-
-  var p2pCount = 0
-  var serverCount = 0
+  p2pCount = 0
+  serverCount = 0
   var maxPositions = this.maxConnections * 2 * 3
 
   for (var i = 0; i < maxPositions; i++) {
@@ -201,12 +221,24 @@ NodeIndexView.prototype.enterFrame = function () {
       break
     }
   }
+  this.hasServer = !!serverSubview
 
-  // Counter-rotate server node so it stays fixed in world space
+  // Counter-rotate fixed nodes (root + server) so they stay fixed in world space
+  // while the group rotates. Peer nodes orbit with the group.
+  var inverseQuat = this.group.quaternion.clone().invert()
+
+  // Root: fixed at P2P_ANCHOR (right) when server exists, origin otherwise
+  var rootWorldPos = this.hasServer ? this.P2P_ANCHOR : this.ZERO_VEC
+  var rootPos = new THREE.Vector3(rootWorldPos.x, rootWorldPos.y, rootWorldPos.z).applyQuaternion(inverseQuat)
+  this.rootNode.element.position.copy(rootPos)
+  this.rootNode.body.position.set(rootPos.x, rootPos.y, rootPos.z)
+  this.rootNode.element.quaternion.copy(this.rootNode.body.quaternion)
+
+  // Server: fixed at SERVER_ANCHOR (left)
   if (serverSubview) {
-    var fixedWorldPos = new THREE.Vector3(-6, 2, 0)
-    var inverseQuat = this.group.quaternion.clone().invert()
-    serverSubview.element.position.copy(fixedWorldPos.applyQuaternion(inverseQuat))
+    var serverPos = new THREE.Vector3(this.SERVER_ANCHOR.x, this.SERVER_ANCHOR.y, this.SERVER_ANCHOR.z).applyQuaternion(inverseQuat)
+    serverSubview.element.position.copy(serverPos)
+    serverSubview.body.position.set(serverPos.x, serverPos.y, serverPos.z)
     serverSubview.element.quaternion.copy(serverSubview.body.quaternion)
   }
 
@@ -225,9 +257,19 @@ NodeIndexView.prototype.enterFrame = function () {
   for (var i in this.subviews) {
     var subview = this.subviews[i]
     if (subview.isServer) continue // position handled above, line drawn above
-    subview.element.position.copy(subview.body.position)
-    subview.element.quaternion.copy(subview.body.quaternion)
-    subview.body.velocity = subview.body.velocity.scale(0.75)
+
+    // Root subview: counter-rotate to stay fixed in world space, like server
+    if (subview.isRoot) {
+      var rootWorldPos = this.hasServer ? this.P2P_ANCHOR : this.ZERO_VEC
+      var rPos = new THREE.Vector3(rootWorldPos.x, rootWorldPos.y, rootWorldPos.z).applyQuaternion(inverseQuat)
+      subview.element.position.copy(rPos)
+      subview.body.position.set(rPos.x, rPos.y, rPos.z)
+      subview.element.quaternion.copy(subview.body.quaternion)
+    } else {
+      subview.element.position.copy(subview.body.position)
+      subview.element.quaternion.copy(subview.body.quaternion)
+      subview.body.velocity = subview.body.velocity.scale(0.75)
+    }
 
     var isServer = subview.model && subview.model.data.transport === 'server'
     var target
@@ -295,6 +337,12 @@ NodeIndexView.prototype.onresize = function () {
 }
 
 NodeIndexView.prototype.addSubview = function (subview) {
+  // Scatter new peers in 3D so they don't collapse to a 2D plane
+  subview.body.position.set(
+    -2 + Math.random() * 4,
+    -2 + Math.random() * 4,
+    -2 + Math.random() * 4
+  )
   this.world.add(subview.body)
   this.group.add(subview.element)
   CollectionView.prototype.addSubview.apply(this, arguments)

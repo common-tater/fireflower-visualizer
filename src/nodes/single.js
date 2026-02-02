@@ -5,6 +5,8 @@ import CANNON from 'cannon'
 // Attach addon to THREE global specific for this module scope if needed, or just use CSS3DObject directly
 // THREE.CSS3DObject = CSS3DObject // Removed because imports are immutable
 
+var ZERO_VEC = new CANNON.Vec3(0, 0, 0)
+
 function NodeSingleView () {
   this.update = this.update.bind(this)
 
@@ -32,6 +34,10 @@ function NodeSingleView () {
   this.domElement.scale.y = this.domElement.scale.x
   this.domElement.scale.z = this.domElement.scale.x
   this.domPlane.add(this.domElement)
+
+  // Initialization for expert physics
+  this._tmpVec = new CANNON.Vec3()
+  this._pullVec = new CANNON.Vec3()
 }
 
 NodeSingleView.prototype.show = function () {
@@ -244,20 +250,35 @@ NodeSingleView.prototype.preStep = function () {
   this.body.quaternion.mult(this.superview.camera.quaternion, this.body.quaternion)
 
   if (this.isServer) {
-    // Fixed position: off to the right side, not orbiting
-    this.body.position.set(6, 3, 0)
+    // Server node: position handled by enterFrame counter-rotation
     this.body.velocity.set(0, 0, 0)
     this.body.force.set(0, 0, 0)
     return
   }
 
   if (this.isRoot) {
+    // Root is fixed: at P2P_ANCHOR when server exists, origin otherwise
+    var targetPos = this.superview.hasServer ? this.superview.P2P_ANCHOR : ZERO_VEC
+    this.body.position.set(targetPos.x, targetPos.y, targetPos.z)
+    this.body.velocity.set(0, 0, 0)
+    this.body.force.set(0, 0, 0)
     return
   }
 
+  var anchor = this.getAnchor()
   var forces = []
   var force = null
-  var gap = null
+
+  // Anchor Gravity: keep nodes from floating too far away
+  var distToAnchor = this.body.position.distanceTo(anchor)
+  if (distToAnchor > 2) {
+    this._pullVec.set(
+      anchor.x - this.body.position.x,
+      anchor.y - this.body.position.y,
+      anchor.z - this.body.position.z
+    )
+    forces.push(this._pullVec.scale(0.05))
+  }
 
   for (var i in this.superview.subviews) {
     var peer = this.superview.subviews[i]
@@ -266,7 +287,7 @@ NodeSingleView.prototype.preStep = function () {
     }
   }
 
-  force = new CANNON.Vec3(0, 0, 0)
+  force = ZERO_VEC
 
   for (var i in forces) {
     var f = forces[i]
@@ -289,9 +310,11 @@ NodeSingleView.prototype.enforcePeerGap = function (peer) {
   var force = null
 
   if (peer === this.upstream && !peer.isRoot) {
-    var upstreamDistanceToRoot = peer.body.position.distanceTo(new CANNON.Vec3(0,0,0))
-    if (upstreamDistanceToRoot > 0) {
-      target = peer.body.position.scale((upstreamDistanceToRoot + gap) / upstreamDistanceToRoot)
+    var anchor = this.getAnchor()
+    var upstreamDistanceToAnchor = peer.body.position.distanceTo(anchor)
+    if (upstreamDistanceToAnchor > 0) {
+      peer.body.position.vsub(anchor, this._tmpVec)
+      target = anchor.vadd(this._tmpVec.scale((upstreamDistanceToAnchor + gap) / upstreamDistanceToAnchor))
     }
   } else {
     if (position.almostEquals(peer.body.position)) {
@@ -314,6 +337,12 @@ NodeSingleView.prototype.enforcePeerGap = function (peer) {
   }
 
   return force
+}
+
+NodeSingleView.prototype.getAnchor = function () {
+  if (!this.superview.hasServer) return ZERO_VEC
+  var transport = this.model && this.model.data.transport
+  return (transport === 'server') ? this.superview.SERVER_ANCHOR : this.superview.P2P_ANCHOR
 }
 
 NodeSingleView.prototype.hide = function () {
