@@ -83,8 +83,8 @@ NodeSingleView.prototype.render = function () {
 
     if (this.isServer) {
       name = 'SERVER'
-      color = '#44DD44'
-      scoreColor = '#88CC88'
+      color = '#00CED1'
+      scoreColor = '#66DDE0'
     } else if (this.isRoot) {
       name = id
       color = '#FF8C19'
@@ -115,7 +115,7 @@ NodeSingleView.prototype.render = function () {
     this.labelElement.textContent = 'loading'
   }
 
-  // Server node: green, medium-sized, fixed position
+  // Server node: cyan, medium-sized, fixed position
   if (this.isServer) {
     if (!this._wasServer) {
       this._wasServer = true
@@ -126,7 +126,7 @@ NodeSingleView.prototype.render = function () {
     }
 
     if (!this.mesh) {
-      this.mesh = this.generateMesh(0.4, 0x44DD44)
+      this.mesh = this.generateMesh(0.4, 0x00CED1)
       this.element.add(this.mesh)
       this.domPlane.position.y = -(0.4 + 0.4)
     }

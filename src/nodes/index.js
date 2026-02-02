@@ -64,7 +64,7 @@ NodeIndexView.prototype.setupRendering = function () {
 
   this.webglRenderer = new THREE.WebGLRenderer({
     canvas: this.element.querySelector('#webgl'),
-    antiAlias: true,
+    antialias: true,
     alpha: true
   })
   this.webglRenderer.setPixelRatio(window.devicePixelRatio)
@@ -72,20 +72,20 @@ NodeIndexView.prototype.setupRendering = function () {
 }
 
 NodeIndexView.prototype.setupLights = function () {
-  this.ambientLight = new THREE.AmbientLight(0xDDDDDD)
+  this.ambientLight = new THREE.AmbientLight(0xBBBBBB)
   this.scene.add(this.ambientLight)
 
-  this.mainLight = new THREE.PointLight(0xFFFFFF, 0.1, 0)
-  this.mainLight.position.set(100, 100, 100)
+  this.mainLight = new THREE.DirectionalLight(0xFFFFFF, 0.3)
+  this.mainLight.position.set(1, 1, 1)
   this.scene.add(this.mainLight)
 
-  this.backgroundLight = new THREE.PointLight(0xFFFFFF, 0.01, 0)
-  this.backgroundLight.position.set(-100, -100, -100)
+  this.backgroundLight = new THREE.DirectionalLight(0xFFFFFF, 0.1)
+  this.backgroundLight.position.set(-1, -1, -1)
   this.scene.add(this.backgroundLight)
 }
 
 NodeIndexView.prototype.setupCamera = function () {
-  this.camera = new THREE.PerspectiveCamera(28, this.element.clientWidth / this.element.clientHeight, 1, 1000)
+  this.camera = new THREE.PerspectiveCamera(28, this.element.clientWidth / this.element.clientHeight, 1, 100000)
   this.camera.position.z = 35
   this.scene.add(this.camera)
 
@@ -110,12 +110,16 @@ NodeIndexView.prototype.setupConnectionGraph = function () {
   var p2pAttribute = new THREE.BufferAttribute(this._p2pPositions, 3)
   p2pAttribute.setUsage(THREE.DynamicDrawUsage)
   p2pGeometry.setAttribute('position', p2pAttribute)
-  p2pGeometry.computeBoundingSphere()
 
   this.p2pConnections = new THREE.LineSegments(p2pGeometry, new THREE.LineBasicMaterial({
-    color: 0x444444,
-    linewidth: 1.5
+    color: 0x888888,
+    linewidth: 1.5,
+    transparent: true,
+    opacity: 0.7,
+    depthWrite: false
   }))
+  this.p2pConnections.frustumCulled = false
+  this.p2pConnections.renderOrder = -1
   this.group.add(this.p2pConnections)
 
   // Server connections (cyan)
@@ -124,12 +128,16 @@ NodeIndexView.prototype.setupConnectionGraph = function () {
   var serverAttribute = new THREE.BufferAttribute(this._serverPositions, 3)
   serverAttribute.setUsage(THREE.DynamicDrawUsage)
   serverGeometry.setAttribute('position', serverAttribute)
-  serverGeometry.computeBoundingSphere()
 
   this.serverConnections = new THREE.LineSegments(serverGeometry, new THREE.LineBasicMaterial({
-    color: 0x44DD44,
-    linewidth: 2.0
+    color: 0x00CED1,
+    linewidth: 2.0,
+    transparent: true,
+    opacity: 0.7,
+    depthWrite: false
   }))
+  this.serverConnections.frustumCulled = false
+  this.serverConnections.renderOrder = -1
   this.group.add(this.serverConnections)
 
   this.rootNode = new this.ItemView()
@@ -206,12 +214,6 @@ NodeIndexView.prototype.enterFrame = function () {
 
   p2pCount = 0
   serverCount = 0
-  var maxPositions = this.maxConnections * 2 * 3
-
-  for (var i = 0; i < maxPositions; i++) {
-    this._p2pPositions[i] = 0
-    this._serverPositions[i] = 0
-  }
 
   // Find the server subview if it exists
   var serverSubview = null
@@ -297,7 +299,9 @@ NodeIndexView.prototype.enterFrame = function () {
     else p2pCount++
   }
 
+  this.p2pConnections.geometry.setDrawRange(0, p2pCount * 2)
   this.p2pConnections.geometry.attributes.position.needsUpdate = true
+  this.serverConnections.geometry.setDrawRange(0, serverCount * 2)
   this.serverConnections.geometry.attributes.position.needsUpdate = true
   this.webglRenderer.render(this.scene, this.camera)
   this.domRenderer.render(this.scene, this.camera)
