@@ -155,3 +155,82 @@ html, body {
   color: var(--c-text-tertiary);
 }
 .node-count strong { color: var(--c-text-secondary); }
+
+/* ── Components: UI Utilities ── */
+.stat-divider {
+  height: 1px;
+  background: var(--c-border);
+  margin: var(--space-xs) 0;
+}
+
+#stat-row-disconnected .stat-value.alert {
+  color: var(--c-struggling);
+  text-shadow: 0 0 8px rgba(255, 68, 68, 0.4);
+}
+
+/* ── Components: Health Grid ── */
+.health-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.health-grid .stat-row { gap: 12px; }
+.health-grid .stat-row.healthy { color: var(--c-healthy); }
+.health-grid .stat-row.moderate { color: var(--c-moderate); }
+.health-grid .stat-row.degraded { color: var(--c-degraded); }
+.health-grid .stat-row.struggling { color: var(--c-struggling); }
+.health-grid .stat-row span:first-child { color: inherit; opacity: 0.8; }
+
+/* ── Components: Node Info Overlay ── */
+.node-info-overlay {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 320px;
+  padding: 24px;
+  background: var(--c-dark-surface);
+  border: 1px solid var(--c-border);
+  border-radius: var(--panel-radius);
+  backdrop-filter: var(--panel-blur);
+  -webkit-backdrop-filter: var(--panel-blur);
+  box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+  z-index: calc(var(--z-overlay) + 10);
+  display: none; /* Hidden by default */
+  pointer-events: auto;
+}
+
+.node-info-overlay.active { display: block; animation: panel-fade-in 0.3s ease-out; }
+
+.node-info-overlay h2 {
+  font-size: 20px;
+  color: var(--c-text-primary);
+  margin: 12px 0 20px;
+  font-family: var(--font-mono);
+  word-break: break-all;
+}
+
+.node-info-overlay .stat-row.highlight .stat-value {
+  font-size: 16px;
+  color: var(--c-healthy);
+}
+
+.node-info-overlay .close-btn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: transparent;
+  border: none;
+  color: var(--c-text-accent);
+  font-size: 24px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 4px;
+  transition: color 0.2s;
+}
+.node-info-overlay .close-btn:hover { color: var(--c-text-primary); }
+
+@keyframes panel-fade-in {
+  from { opacity: 0; transform: translate(-50%, -45%); }
+  to { opacity: 1; transform: translate(-50%, -50%); }
+}

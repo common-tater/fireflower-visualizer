@@ -95,11 +95,16 @@ NodeSingleView.prototype.render = function () {
 
     this.labelElement.style.color = color
     var capacityHtml = this._renderCapacity()
-    if (score != null) {
-      this.labelElement.innerHTML = '<span>' + name + '</span><span class="score" style="color:' + scoreColor + '">' + score + (capacityHtml ? ' ' + capacityHtml : '') + '</span>'
-    } else {
-      this.labelElement.innerHTML = '<span>' + name + '</span>' + (capacityHtml ? '<span class="score" style="color:' + scoreColor + '">' + capacityHtml + '</span>' : '')
+    var labelHtml = '<span>' + name + '</span>'
+
+    if (score != null || capacityHtml) {
+      labelHtml += '<div class="score" style="color:' + scoreColor + '">'
+      if (score != null) labelHtml += '<span>' + score + '</span>'
+      if (capacityHtml) labelHtml += capacityHtml
+      labelHtml += '</div>'
     }
+
+    this.labelElement.innerHTML = labelHtml
   } else {
     this.labelElement.textContent = 'loading'
   }

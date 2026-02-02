@@ -50,50 +50,55 @@
 
 /* ── Node labels ── */
 #node-index #dom .label {
-  font-size: 18px;
+  font-size: 24px; /* Increased from 18px */
   font-family: inherit;
-  font-weight: 500;
+  font-weight: 600; /* Bolder */
   color: #fff;
   background-color: transparent;
   text-shadow:
-    0 0 6px rgba(0, 0, 0, 0.9),
-    0 1px 3px rgba(0, 0, 0, 0.7);
-  width: 160px;
-  height: 50px;
+    0 0 8px rgba(0, 0, 0, 1),
+    0 2px 4px rgba(0, 0, 0, 0.8);
+  width: 200px; /* Wider */
+  height: 60px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 2px;
+  gap: 6px; /* Increased gap */
   overflow: visible;
-  line-height: 1.2;
+  line-height: 1;
   letter-spacing: 0.04em;
   transition: opacity 0.3s ease;
   pointer-events: none;
   user-select: none;
 }
 
-#node-index #dom .label span {
-  display: block;
+#node-index #dom .label span:first-child {
+  padding-bottom: 2px;
 }
 
 #node-index #dom .label .score {
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  opacity: 0.85;
-  padding: 1px 6px;
-  border-radius: 6px;
-  background: rgba(0, 0, 0, 0.35);
+  font-size: 16px; /* Increased from 12px */
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  padding: 2px 10px;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.5);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
 }
 
 #node-index #dom .label .capacity {
-  font-size: 10px;
-  font-weight: 400;
-  opacity: 0.7;
+  font-size: 13px; /* Increased from 10px */
+  font-weight: 500;
+  opacity: 1;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 1px 4px;
+  border-radius: 4px;
 }
 
 #node-index #dom .label .capacity.full {
   color: #FF4444;
-  opacity: 1;
+  background: rgba(255, 68, 68, 0.2);
 }

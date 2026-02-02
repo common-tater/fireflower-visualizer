@@ -39,6 +39,34 @@
           </div>
         </div>
 
+        <!-- Health Summary Panel -->
+        <div class="ui-panel" id="ui-health">
+          <div class="panel-header">Health Distribution</div>
+          <div class="health-grid">
+            <div class="stat-row healthy">
+              <span>Healthy</span>
+              <span class="stat-value" id="health-healthy">0</span>
+            </div>
+            <div class="stat-row moderate">
+              <span>Moderate</span>
+              <span class="stat-value" id="health-moderate">0</span>
+            </div>
+            <div class="stat-row degraded">
+              <span>Degraded</span>
+              <span class="stat-value" id="health-degraded">0</span>
+            </div>
+            <div class="stat-row struggling">
+              <span>Struggling</span>
+              <span class="stat-value" id="health-struggling">0</span>
+            </div>
+          </div>
+          <div class="stat-divider"></div>
+          <div class="stat-row">
+            <span>Avg Health</span>
+            <span class="stat-value" id="health-avg">0</span>
+          </div>
+        </div>
+
         <!-- Network Stats Panel -->
         <div class="ui-panel" id="ui-stats">
           <div class="panel-header">Network</div>
@@ -46,6 +74,11 @@
             <span>Nodes</span>
             <span class="stat-value" id="stat-nodes">0</span>
           </div>
+          <div class="stat-row" id="stat-row-disconnected">
+            <span>Disconnected</span>
+            <span class="stat-value" id="stat-disconnected">0</span>
+          </div>
+          <div class="stat-divider"></div>
           <div class="stat-row">
             <span>P2P</span>
             <span class="stat-value" id="stat-p2p">0</span>
@@ -53,6 +86,11 @@
           <div class="stat-row">
             <span>Server</span>
             <span class="stat-value" id="stat-server">0</span>
+          </div>
+          <div class="stat-divider"></div>
+          <div class="stat-row">
+            <span>Max Depth</span>
+            <span class="stat-value" id="stat-depth">0</span>
           </div>
         </div>
 
@@ -89,6 +127,41 @@
           <div class="legend-item">
             <div class="legend-line" style="background:var(--c-link-server)"></div>
             Server link
+          </div>
+        </div>
+      </div>
+
+      <!-- Center Overlay: Node Info (hidden by default) -->
+      <div class="node-info-overlay" id="node-info-overlay">
+        <button class="close-btn" id="overlay-close">×</button>
+        <div class="panel-header">Node Information</div>
+        <div class="overlay-content">
+          <h2 id="node-info-id">NODE_ID</h2>
+          <div class="stat-row">
+            <span>Username</span>
+            <span id="node-info-username">–</span>
+          </div>
+          <div class="stat-divider"></div>
+          <div class="stat-row">
+            <span>Transport</span>
+            <span id="node-info-transport">–</span>
+          </div>
+          <div class="stat-row">
+            <span>Upstream</span>
+            <span id="node-info-upstream">–</span>
+          </div>
+          <div class="stat-row">
+            <span>Level</span>
+            <span id="node-info-level">0</span>
+          </div>
+          <div class="stat-divider"></div>
+          <div class="stat-row highlight">
+            <span>Score</span>
+            <span id="node-info-score">0</span>
+          </div>
+          <div class="stat-row">
+            <span>Downstream</span>
+            <span id="node-info-downstream">0</span>
           </div>
         </div>
       </div>
