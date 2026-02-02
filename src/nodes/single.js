@@ -246,6 +246,7 @@ NodeSingleView.prototype.renderHealthColor = function (score) {
 }
 
 NodeSingleView.prototype.preStep = function () {
+  if (!this.superview) return
   this.body.quaternion.copy(this.superview.group.quaternion.clone().invert())
   this.body.quaternion.mult(this.superview.camera.quaternion, this.body.quaternion)
 
