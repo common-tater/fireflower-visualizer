@@ -271,6 +271,14 @@ NodeIndexView.prototype.enterFrame = function () {
       subview.element.position.copy(subview.body.position)
       subview.element.quaternion.copy(subview.body.quaternion)
       subview.body.velocity = subview.body.velocity.scale(0.75)
+
+      // Arrival pulse: scale up then ease back to 1.0
+      if (subview._arriveFrames > 0) {
+        subview._arriveFrames--
+        var t = subview._arriveFrames / 20
+        var s = 1 + 0.3 * t
+        subview.element.scale.set(s, s, s)
+      }
     }
 
     var isServer = subview.model && subview.model.data.transport === 'server'
@@ -297,6 +305,22 @@ NodeIndexView.prototype.enterFrame = function () {
 
     if (isServer) serverCount++
     else p2pCount++
+  }
+
+  // Tick removal animations
+  if (this._removing) {
+    for (var r = this._removing.length - 1; r >= 0; r--) {
+      var rem = this._removing[r]
+      rem._removeFrames--
+      var s = rem._removeFrames / 15
+      rem.element.scale.set(s, s, s)
+      if (rem._removeFrames <= 0) {
+        this.group.remove(rem.element)
+        this.world.remove(rem.body)
+        this._removing.splice(r, 1)
+      }
+    }
+    if (!this._removing.length) delete this._removing
   }
 
   this.p2pConnections.geometry.setDrawRange(0, p2pCount * 2)
@@ -347,6 +371,8 @@ NodeIndexView.prototype.addSubview = function (subview) {
     -2 + Math.random() * 4,
     -2 + Math.random() * 4
   )
+  subview._arriveFrames = 20
+  subview.element.scale.set(1.3, 1.3, 1.3)
   this.world.add(subview.body)
   this.group.add(subview.element)
   CollectionView.prototype.addSubview.apply(this, arguments)
@@ -354,8 +380,9 @@ NodeIndexView.prototype.addSubview = function (subview) {
 
 NodeIndexView.prototype.removeSubview = function (subview) {
   CollectionView.prototype.removeSubview.apply(this, arguments)
-  this.group.remove(subview.element)
-  this.world.remove(subview.body)
+  subview._removeFrames = 15
+  this._removing = this._removing || []
+  this._removing.push(subview)
 }
 
 export default NodeIndexView
