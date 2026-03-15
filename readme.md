@@ -2,6 +2,15 @@
 
 A 3D visualization tool for [fireflower](https://github.com/common-tater/fireflower) networks using Three.js and CSS3D. It connects to the same Firebase Realtime Database as your fireflower nodes to render the live topology.
 
+![Fireflower Simulator](docs/media/fireflower-simulator.jpg)
+
+## Demo
+
+[Watch Video (MOV)](docs/media/fireflower-viz-vid.mov)
+
+![Visualizer Server](docs/media/fireflower-viz-server.jpg)
+
+
 ## Setup
 
 1. **Install Dependencies**
