@@ -6,7 +6,7 @@ A 3D visualization tool for [fireflower](https://github.com/common-tater/fireflo
 
 ## Demo
 
-<video src="docs/media/fireflower-viz-vid.mov" width="100%" controls></video>
+<video src="https://github.com/common-tater/fireflower-visualizer/raw/master/docs/media/fireflower-viz-vid.mov" width="100%" controls></video>
 
 ![Visualizer Server](docs/media/fireflower-viz-server.jpg)
 
