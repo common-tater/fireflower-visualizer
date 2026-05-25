@@ -31,6 +31,8 @@ var infoUpstream = document.getElementById('node-info-upstream')
 var infoLevel = document.getElementById('node-info-level')
 var infoScore = document.getElementById('node-info-score')
 var infoDownstream = document.getElementById('node-info-downstream')
+var infoRtt = document.getElementById('node-info-rtt')
+var infoDropRate = document.getElementById('node-info-droprate')
 var overlayClose = document.getElementById('overlay-close')
 
 if (overlayClose) {
@@ -99,6 +101,7 @@ if (statNodesEl) {
     var stats = {
       total: 0, p2p: 0, server: 0, disconnected: 0,
       maxDepth: 0, sumHealth: 0, healthCount: 0,
+      sumRtt: 0, rttCount: 0, sumDropRate: 0, dropRateCount: 0,
       buckets: { healthy: 0, moderate: 0, degraded: 0, struggling: 0 }
     }
 
@@ -130,6 +133,15 @@ if (statNodesEl) {
         else if (s >= 20) stats.buckets.degraded++
         else stats.buckets.struggling++
       }
+
+      if (report.health && report.health.rtt != null) {
+        stats.sumRtt += report.health.rtt
+        stats.rttCount++
+      }
+      if (report.health && report.health.dropRate != null) {
+        stats.sumDropRate += report.health.dropRate
+        stats.dropRateCount++
+      }
     }
 
     // Update Network panel
@@ -155,6 +167,15 @@ if (statNodesEl) {
     if (healthAvgEl) {
       var avg = stats.healthCount > 0 ? Math.round(stats.sumHealth / stats.healthCount) : 0
       healthAvgEl.textContent = avg
+    }
+
+    var statRttEl = document.getElementById('stat-rtt')
+    if (statRttEl) {
+      statRttEl.textContent = stats.rttCount > 0 ? Math.round(stats.sumRtt / stats.rttCount) + 'ms' : '–'
+    }
+    var statDropRateEl = document.getElementById('stat-droprate')
+    if (statDropRateEl) {
+      statDropRateEl.textContent = stats.dropRateCount > 0 ? (stats.sumDropRate / stats.dropRateCount * 100).toFixed(1) + '%' : '0%'
     }
   })
 }
@@ -185,6 +206,8 @@ nodeIndexView.handleClick = function (click) {
         infoLevel.textContent = (data.health && data.health.level) || '0'
         infoScore.textContent = (data.health && data.health.score) || '–'
         infoDownstream.textContent = (data.health && data.health.downstreamCount) || '0'
+        if (infoRtt) infoRtt.textContent = (data.health && data.health.rtt != null) ? data.health.rtt + 'ms' : '–'
+        if (infoDropRate) infoDropRate.textContent = (data.health && data.health.dropRate != null) ? (data.health.dropRate * 100).toFixed(1) + '%' : '–'
 
         infoOverlay.classList.add('active')
       }
